@@ -1,0 +1,6 @@
+{
+  "item.alcoholism.vodka" : "Vodka",
+  "block.alcoholism.distillery_block" : "Distillery",
+  "itemGroup.alcoholismTab" : "Alcoholism",
+  "container.alcohol.distillery_container" : "Distillery Container"
+}
