@@ -6,6 +6,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.FurnaceFuelSlot;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
@@ -25,31 +26,46 @@ public class DistilleryContainer extends Container {
         this.tileEntity = tileEntity;
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
 
-        // Main inventory
-        int startX = 8;
-        int startY = 18;
-        int slotSizePlus2 = 18;
+        int startX = 12;
+        int slotSize = 22;
+        int bufferSize = 4;
 
-        for(int row = 0; row < 4; row++){
-            for(int column = 0; column < 9; column++){
-                this.addSlot(new Slot(tileEntity, (row * 9) + column, startX + column * slotSizePlus2, startY + row * slotSizePlus2));
-            }
-        }
+        int slotGapSize = slotSize + bufferSize;
+
+        int ingredientInputX = 82;
+        int ingredientInputY = 25;
+
+        int fuelInputX = 82;
+        int fuelInputY = 77;
+
+        int outputX = 163;
+        int outputY = 45;
+
+
+        // Ingredient slot
+        this.addSlot(new Slot(tileEntity, 0, ingredientInputX, ingredientInputY));
+
+        // Fuel slot
+        this.addSlot(new Slot(tileEntity, 1, fuelInputX, fuelInputY));
+
+        // Output slot
+        this.addSlot(new Slot(tileEntity, 2, outputX, outputY));
+
 
         // Main Player Inventory
-        int playerIvnY = startY * 5 + 12;
+        int playerIvnY = 122;
         for(int row = 0; row < 3; row++){
             for(int column = 0; column < 9; column++){
                 // Add 9 to index because the inventory starts with the hotbar
-                this.addSlot(new Slot(playerInventory, 9 + (row * 9) + column, startX + column * slotSizePlus2, playerIvnY + row * slotSizePlus2));
+                this.addSlot(new Slot(playerInventory, 9 + (row * 9) + column, startX + column * slotGapSize, playerIvnY + row * slotGapSize));
             }
         }
 
         // Player Hotbar
-        int playerHotbarY = playerIvnY + (playerIvnY / 2) + 7;
+        int playerHotbarY = 206;
 
         for(int column = 0; column < 9; column++){
-            this.addSlot(new Slot(playerInventory, column, startX + column * slotSizePlus2, playerHotbarY));
+            this.addSlot(new Slot(playerInventory, column, startX + column * slotGapSize, playerHotbarY));
         }
     }
 

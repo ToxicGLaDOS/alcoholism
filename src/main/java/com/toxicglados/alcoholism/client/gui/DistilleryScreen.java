@@ -6,6 +6,9 @@ import com.toxicglados.alcoholism.container.DistilleryContainer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
+import net.minecraft.item.crafting.FurnaceRecipe;
+import net.minecraft.item.crafting.RecipeManager;
+import net.minecraft.tileentity.FurnaceTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,15 +17,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class DistilleryScreen extends ContainerScreen<DistilleryContainer> {
 
-    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(Alcoholism.MOD_ID, "textures/gui/example_chest.png");
+    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(Alcoholism.MOD_ID, "textures/gui/furnace_gui.png");
 
     public DistilleryScreen(DistilleryContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
         super(screenContainer, inv, titleIn);
         this.guiLeft = 0;
         this.guiTop = 0;
 
-        this.xSize = 175;
-        this.ySize = 183;
+        this.xSize = 256;
+        this.ySize = 240;
     }
 
     @Override
@@ -38,7 +41,7 @@ public class DistilleryScreen extends ContainerScreen<DistilleryContainer> {
         // 8.0f and 6.0f are the top left of where to start drawing the string
         // 4210752 is the default color
         this.font.drawString(this.title.getFormattedText(), 8.0f, 6.0f, 4210752);
-        this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8.0f, 90.0f, 4210752);
+        this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8.0f, 103.0f, 4210752);
     }
 
     @Override
