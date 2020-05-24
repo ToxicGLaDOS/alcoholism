@@ -51,13 +51,4 @@ public class DistilleryBlock extends Block {
         return ActionResultType.FAIL;
     }
 
-    @Override
-    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if(state.getBlock() != newState.getBlock()) {
-            TileEntity te = worldIn.getTileEntity(pos);
-            if(te instanceof DistilleryTileEntity) {
-                InventoryHelper.dropItems(worldIn, pos, ((DistilleryTileEntity)te).getItems());
-            }
-        }
-    }
 }

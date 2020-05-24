@@ -1,5 +1,7 @@
 package com.toxicglados.alcoholism.container;
 
+import com.toxicglados.alcoholism.core.slots.DistilleryFuelSlot;
+import com.toxicglados.alcoholism.core.slots.DistilleryOutputSlot;
 import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.entity.player.PlayerEntity;
@@ -46,10 +48,10 @@ public class DistilleryContainer extends Container {
         this.addSlot(new Slot(tileEntity, 0, ingredientInputX, ingredientInputY));
 
         // Fuel slot
-        this.addSlot(new Slot(tileEntity, 1, fuelInputX, fuelInputY));
+        this.addSlot(new DistilleryFuelSlot(tileEntity, 1, fuelInputX, fuelInputY));
 
         // Output slot
-        this.addSlot(new Slot(tileEntity, 2, outputX, outputY));
+        this.addSlot(new DistilleryOutputSlot(tileEntity, 2, outputX, outputY));
 
 
         // Main Player Inventory
