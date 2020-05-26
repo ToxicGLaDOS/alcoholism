@@ -1,19 +1,20 @@
 package com.toxicglados.alcoholism.container;
 
+import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.core.slots.DistilleryFuelSlot;
 import com.toxicglados.alcoholism.core.slots.DistilleryOutputSlot;
 import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.FurnaceFuelSlot;
-import net.minecraft.inventory.container.Slot;
+import net.minecraft.inventory.container.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIntArray;
 import net.minecraft.util.IWorldPosCallable;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -22,27 +23,32 @@ public class DistilleryContainer extends Container {
 
     public final DistilleryTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
+    private final IIntArray distilleryData;
 
     public DistilleryContainer(final int windowId, final PlayerInventory playerInventory, final DistilleryTileEntity tileEntity) {
         super(RegistryHandler.DISTILLERY_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
+        this.distilleryData = tileEntity.distilleryData;
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
 
-        int startX = 12;
-        int slotSize = 22;
+        int startX = 8;
+        int slotSize = 14;
         int bufferSize = 4;
 
         int slotGapSize = slotSize + bufferSize;
 
-        int ingredientInputX = 82;
-        int ingredientInputY = 25;
+        int ingredientInputX = 55;
+        int ingredientInputY = 17;
 
-        int fuelInputX = 82;
-        int fuelInputY = 77;
+        int fuelInputX = 55;
+        int fuelInputY = 52;
 
-        int outputX = 163;
-        int outputY = 45;
+        int outputX = 116;
+        int outputY = 35;
 
+        // THIS IS SUPER IMPORTANT
+        // IT KEEPS THE distilleryData IN SYNC WITH CLIENT
+        this.trackIntArray(tileEntity.distilleryData);
 
         // Ingredient slot
         this.addSlot(new Slot(tileEntity, 0, ingredientInputX, ingredientInputY));
@@ -55,7 +61,7 @@ public class DistilleryContainer extends Container {
 
 
         // Main Player Inventory
-        int playerIvnY = 122;
+        int playerIvnY = 84;
         for(int row = 0; row < 3; row++){
             for(int column = 0; column < 9; column++){
                 // Add 9 to index because the inventory starts with the hotbar
@@ -64,11 +70,13 @@ public class DistilleryContainer extends Container {
         }
 
         // Player Hotbar
-        int playerHotbarY = 206;
+        int playerHotbarY = 142;
 
         for(int column = 0; column < 9; column++){
             this.addSlot(new Slot(playerInventory, column, startX + column * slotGapSize, playerHotbarY));
         }
+
+
     }
 
     public DistilleryContainer(final int windowId, final PlayerInventory playerInventory, final PacketBuffer data) {
@@ -116,5 +124,27 @@ public class DistilleryContainer extends Container {
             }
         }
         return itemStack;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public int getCookProgressionScaled(int scale) {
+        int i = this.distilleryData.get(2);
+        int j = this.distilleryData.get(3);
+        return j != 0 && i != 0 ? i * scale / j : 0;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public int getBurnLeftScaled(int scale) {
+        int i = this.distilleryData.get(1);
+        if (i == 0) {
+            i = 200;
+        }
+
+        return this.distilleryData.get(0) * scale / i;
+    }
+
+
+    public DistilleryTileEntity getTileEntity(){
+        return tileEntity;
     }
 }

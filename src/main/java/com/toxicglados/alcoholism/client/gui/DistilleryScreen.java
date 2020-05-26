@@ -3,11 +3,13 @@ package com.toxicglados.alcoholism.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.container.DistilleryContainer;
+import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.crafting.FurnaceRecipe;
 import net.minecraft.item.crafting.RecipeManager;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.FurnaceTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -18,14 +20,38 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class DistilleryScreen extends ContainerScreen<DistilleryContainer> {
 
     private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(Alcoholism.MOD_ID, "textures/gui/furnace_gui.png");
+    private DistilleryTileEntity tileEntity;
+
+    private final int PROGRESS_ARROW_X = 80;
+    private final int PROGRESS_ARROW_Y = 35;
+    private final int PROGRESS_ARROW_OFFSET_X = 176;
+    private final int PROGRESS_ARROW_OFFSET_Y = 0;
+    private final int PROGRESS_ARROW_WIDTH = 22;
+    private final int PROGRESS_ARROW_HEIGHT = 15;
+
+    private final int FUEL_REMAINING_X = 57;
+    private final int FUEL_REMAINING_Y = 37;
+    private final int FUEL_REMAINING_OFFSET_X = 176;
+    private final int FUEL_REMAINING_OFFSET_Y = 15;
+    private final int FUEL_REMAINING_WIDTH = 14;
+    private final int FUEL_REMAINING_HEIGHT = 13;
 
     public DistilleryScreen(DistilleryContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
         super(screenContainer, inv, titleIn);
-        this.guiLeft = 0;
-        this.guiTop = 0;
 
-        this.xSize = 256;
-        this.ySize = 240;
+        // Just an FYI: These default to
+        // xSize = 176
+        // ySize = 166
+        // see ContainerScreen implementation for details
+        // IMPORTANT: Minecraft is expecting a 256x256 image. Any bigger (and probably smaller) and weird stuff happening
+        // These tell the super class how big the image is and it is used to calculate stuff during rendering
+        // setting it wrong might not always look wrong, but it can be affect things so be careful i guess?
+        this.xSize = 176;
+        this.ySize = 166;
+        // This sets up the guiLeft and guiTop which are used similarly to xSize and ySize
+        this.init();
+
+        this.tileEntity = screenContainer.getTileEntity();
     }
 
     @Override
@@ -41,17 +67,27 @@ public class DistilleryScreen extends ContainerScreen<DistilleryContainer> {
         // 8.0f and 6.0f are the top left of where to start drawing the string
         // 4210752 is the default color
         this.font.drawString(this.title.getFormattedText(), 8.0f, 6.0f, 4210752);
-        this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8.0f, 103.0f, 4210752);
+        this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8.0f, 70.0f, 4210752);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         this.minecraft.getTextureManager().bindTexture(BACKGROUND_TEXTURE);
-        // this.width and this.height are the screen width and height
-        int x = (this.width - this.xSize) / 2;
-        int y = (this.height - this.ySize) / 2;
 
-        this.blit(x, y, 0, 0, this.xSize, this.ySize);
+        // Blitting actually draws the texture,
+        // The first two arguments define where on the screen it goes
+        // The next two define which pixels to start reading from on the texture
+        // The last two arguments define how big the texture is in the image
+        // essentially the last four arguments allow you have multiple pieces in one image (see texture/gui/* for examples)
+        this.blit(this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+        int fuelRemainingHeight = container.getBurnLeftScaled(FUEL_REMAINING_HEIGHT);
+        int progressArrowWidth = container.getCookProgressionScaled(PROGRESS_ARROW_WIDTH);
+
+        this.blit(this.guiLeft + FUEL_REMAINING_X, this.guiTop + FUEL_REMAINING_Y + FUEL_REMAINING_HEIGHT - fuelRemainingHeight, FUEL_REMAINING_OFFSET_X, FUEL_REMAINING_OFFSET_Y + FUEL_REMAINING_HEIGHT - fuelRemainingHeight, FUEL_REMAINING_WIDTH, fuelRemainingHeight);
+
+
+        this.blit(this.guiLeft + PROGRESS_ARROW_X, this.guiTop + PROGRESS_ARROW_Y, PROGRESS_ARROW_OFFSET_X, PROGRESS_ARROW_OFFSET_Y, progressArrowWidth, PROGRESS_ARROW_HEIGHT);
+
     }
 }

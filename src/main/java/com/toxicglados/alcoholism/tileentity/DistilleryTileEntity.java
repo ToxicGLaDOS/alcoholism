@@ -19,15 +19,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.*;
-import net.minecraft.util.Direction;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -57,6 +56,43 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
             return index;
         }
     }
+
+    public final IIntArray distilleryData = new IIntArray() {
+        public int get(int index) {
+            switch (index) {
+                case 0:
+                    return DistilleryTileEntity.this.fuelBurnTimeRemaining;
+                case 1:
+                    return DistilleryTileEntity.this.currentItemBurnTime;
+                case 2:
+                    return DistilleryTileEntity.this.cookTime;
+                case 3:
+                    return DistilleryTileEntity.this.totalCookTime;
+                default:
+                    return 0;
+            }
+        }
+
+        public void set(int index, int value) {
+            switch (index) {
+                case 0:
+                    DistilleryTileEntity.this.fuelBurnTimeRemaining = value;
+                    break;
+                case 1:
+                    DistilleryTileEntity.this.currentItemBurnTime = value;
+                    break;
+                case 2:
+                    DistilleryTileEntity.this.cookTime = value;
+                    break;
+                case 3:
+                    DistilleryTileEntity.this.totalCookTime = value;
+            }
+        }
+
+        public int size() {
+            return 4;
+        }
+    };
 
     private NonNullList<ItemStack> contents = NonNullList.withSize(3, ItemStack.EMPTY);
     protected int numPlayerUsing;
@@ -251,10 +287,10 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     public void tick() {
         boolean wasBurning = this.isBurning();
         boolean isDirty = false;
-
         if (this.isBurning()){
             this.fuelBurnTimeRemaining--;
         }
+
         if (!this.world.isRemote)
         {
             ItemStack ingredientStack = this.contents.get(SLOT.INGREDIENT.getIndex());
@@ -262,12 +298,10 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
             // If we're not burning anymore than a fuel has been consumed
             // and we need to check if there is any left to keep going
             if (!this.isBurning() && this.canSmelt()){
-                Alcoholism.LOGGER.info("Attempt to consume fuel");
 
                 // Set the burn time remaining to the burn time of the fuel in the slot right now
                 this.fuelBurnTimeRemaining = getBurnTime(fuelStack);
                 this.currentItemBurnTime = this.fuelBurnTimeRemaining;
-                Alcoholism.LOGGER.info("Fuel stack burn time: {}", getBurnTime(fuelStack));
 
                 // If we are now burning again than we need to consume a fuel
                 if (this.isBurning()){
@@ -276,7 +310,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
 
                     Item fuelItem = fuelStack.getItem();
                     fuelStack.shrink(1);
-                    Alcoholism.LOGGER.info("Consumed fuel.");
 
                 }
             }
@@ -303,8 +336,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         if (isDirty){
             this.markDirty();
         }
-
-
     }
 
     public static int getBurnTime(ItemStack itemStack){
@@ -313,7 +344,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         }
         else {
             int burnTime = net.minecraftforge.common.ForgeHooks.getBurnTime(itemStack);
-            Alcoholism.LOGGER.info("Burn time: {}", burnTime);
             if(burnTime >= 0){
                 return burnTime;
             }
@@ -376,7 +406,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     }
 
     public int getCookTime(ItemStack itemStack){
-        return 10;
+        return 100;
     }
 
     public static int getPlayersUsing(IBlockReader reader, BlockPos pos) {
