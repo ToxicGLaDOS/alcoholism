@@ -1,0 +1,6 @@
+{
+    "parent": "block/crop",
+    "textures": {
+        "crop": "alcoholism:blocks/rice_crop_stage5"
+    }
+}

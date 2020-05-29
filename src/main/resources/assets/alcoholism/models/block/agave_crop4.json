@@ -1,0 +1,6 @@
+{
+    "parent": "block/crop",
+    "textures": {
+        "crop": "alcoholism:blocks/agave_crop_stage4"
+    }
+}

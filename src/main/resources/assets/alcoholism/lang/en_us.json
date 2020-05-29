@@ -1,6 +1,10 @@
 {
   "item.alcoholism.vodka" : "Vodka",
+  "item.alcoholism.rice" : "Rice",
+  "item.alcoholism.agave" : "Agave",
   "block.alcoholism.distillery_block" : "Distillery",
   "itemGroup.alcoholismTab" : "Alcoholism",
-  "container.alcohol.distillery_container" : "Distillery Container"
+  "container.alcoholism.distillery_container" : "Distillery Container",
+  "block.alcoholism.rice_crop" : "Rice Seeds",
+  "block.alcoholism.agave_crop" : "Agave Seeds"
 }
