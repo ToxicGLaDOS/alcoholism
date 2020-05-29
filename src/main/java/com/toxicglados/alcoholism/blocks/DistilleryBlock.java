@@ -4,11 +4,14 @@ import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.FurnaceBlock;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.inventory.container.FurnaceContainer;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
@@ -42,13 +45,17 @@ public class DistilleryBlock extends Block {
     @Override
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult result) {
         if(!worldIn.isRemote) {
-            TileEntity tile = worldIn.getTileEntity(pos);
-            if(tile instanceof DistilleryTileEntity) {
-                NetworkHooks.openGui((ServerPlayerEntity) player, (DistilleryTileEntity) tile, pos);
+            TileEntity tileEntity = worldIn.getTileEntity(pos);
+            if(tileEntity instanceof DistilleryTileEntity) {
+                // Furnace uses this method: player.openContainer((INamedContainerProvider)tileEntity);
+                // But it doesn't seem to work (it gives a null PacketBuffer to the DistilleryContainer constructor)
+                // This opengui method seems to do the trick though
+                NetworkHooks.openGui((ServerPlayerEntity) player, (DistilleryTileEntity) tileEntity, pos);
                 return ActionResultType.SUCCESS;
             }
         }
-        return ActionResultType.FAIL;
+        return ActionResultType.SUCCESS;
+
     }
 
 }
