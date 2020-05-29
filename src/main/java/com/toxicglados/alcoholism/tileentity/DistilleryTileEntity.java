@@ -170,7 +170,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
 
     @Override
     protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent("container.alcohol.distillery_container");
+        return new TranslationTextComponent("container.alcoholism.distillery_container");
     }
 
     @Override
