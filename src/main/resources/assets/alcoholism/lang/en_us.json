@@ -2,6 +2,7 @@
   "item.alcoholism.vodka" : "Vodka",
   "item.alcoholism.rice" : "Rice",
   "item.alcoholism.agave" : "Agave",
+  "item.alcoholism.baked_agave" : "Baked Agave",
   "block.alcoholism.distillery_block" : "Distillery",
   "itemGroup.alcoholismTab" : "Alcoholism",
   "container.alcoholism.distillery_container" : "Distillery Container",
