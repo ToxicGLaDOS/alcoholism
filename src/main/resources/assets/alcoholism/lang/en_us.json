@@ -4,8 +4,10 @@
   "item.alcoholism.agave" : "Agave",
   "item.alcoholism.baked_agave" : "Baked Agave",
   "block.alcoholism.distillery_block" : "Distillery",
+  "block.alcoholism.tahona_block" : "Tahona",
   "itemGroup.alcoholismTab" : "Alcoholism",
   "container.alcoholism.distillery_container" : "Distillery Container",
+  "container.alcoholism.tahona_container" : "Tahona Container",
   "block.alcoholism.rice_crop" : "Rice Seeds",
   "block.alcoholism.agave_crop" : "Agave Seeds"
 }

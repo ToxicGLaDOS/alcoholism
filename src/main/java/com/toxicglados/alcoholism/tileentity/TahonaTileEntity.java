@@ -1,34 +1,32 @@
 package com.toxicglados.alcoholism.tileentity;
 
 import com.toxicglados.alcoholism.Alcoholism;
-import com.toxicglados.alcoholism.blocks.DistilleryBlock;
-import com.toxicglados.alcoholism.container.DistilleryContainer;
-import com.toxicglados.alcoholism.core.recipes.DistilleryRecipes;
+import com.toxicglados.alcoholism.container.TahonaContainer;
+import com.toxicglados.alcoholism.core.recipes.TahonaRecipes;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.*;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.ITickableTileEntity;
+import net.minecraft.tileentity.LockableTileEntity;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -36,20 +34,30 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class DistilleryTileEntity extends LockableTileEntity implements ITickableTileEntity {
+public class TahonaTileEntity extends LockableTileEntity implements ITickableTileEntity {
 
-    // Amount of ticks left of fuel for this item
-    private int fuelBurnTimeRemaining;
-    // The number of ticks this item gives in burn time
-    private int currentItemBurnTime;
-    // The amount of ticks the current ingredient has been cooked for
-    private int cookTime;
-    // The amount of ticks required to cook the current item
-    private int totalCookTime;
+    // The number of cycles the tahona has made on this ingredient
+    private int cyclesMade;
+    // The number of cycles required for this item
+    private int cyclesRequired;
     private String customName;
 
+    private int tickCount = 0;
+
+    @Override
+    public void tick() {
+        if (!this.world.isRemote){
+            //Alcoholism.LOGGER.info("cyclesMade: {}, cyclesRequired: {}", cyclesMade, cyclesRequired);
+            //tickCount++;
+//
+            //if (tickCount % 40 == 0){
+            //    doCycle();
+            //}
+        }
+    }
+
     private enum SLOT {
-        INGREDIENT(0), FUEL(1), OUTPUT(2);
+        INGREDIENT(0), OUTPUT(1);
 
         private final int index;
         private SLOT(int index){
@@ -61,17 +69,13 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         }
     }
 
-    public final IIntArray distilleryData = new IIntArray() {
+    public final IIntArray tahonaData = new IIntArray() {
         public int get(int index) {
             switch (index) {
                 case 0:
-                    return DistilleryTileEntity.this.fuelBurnTimeRemaining;
+                    return TahonaTileEntity.this.cyclesMade;
                 case 1:
-                    return DistilleryTileEntity.this.currentItemBurnTime;
-                case 2:
-                    return DistilleryTileEntity.this.cookTime;
-                case 3:
-                    return DistilleryTileEntity.this.totalCookTime;
+                    return TahonaTileEntity.this.cyclesRequired;
                 default:
                     return 0;
             }
@@ -80,35 +84,30 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         public void set(int index, int value) {
             switch (index) {
                 case 0:
-                    DistilleryTileEntity.this.fuelBurnTimeRemaining = value;
+                    TahonaTileEntity.this.cyclesMade = value;
                     break;
                 case 1:
-                    DistilleryTileEntity.this.currentItemBurnTime = value;
+                    TahonaTileEntity.this.cyclesRequired = value;
                     break;
-                case 2:
-                    DistilleryTileEntity.this.cookTime = value;
-                    break;
-                case 3:
-                    DistilleryTileEntity.this.totalCookTime = value;
             }
         }
 
         public int size() {
-            return 4;
+            return 2;
         }
     };
 
-    private NonNullList<ItemStack> contents = NonNullList.withSize(3, ItemStack.EMPTY);
+    private NonNullList<ItemStack> contents = NonNullList.withSize(2, ItemStack.EMPTY);
     protected int numPlayerUsing;
-    private IItemHandlerModifiable items = createHandler();
-    private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
+    //private IItemHandlerModifiable items = createHandler();
+    //private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
 
-    public DistilleryTileEntity(final TileEntityType<?> tileEntityType){
+    public TahonaTileEntity(final TileEntityType<?> tileEntityType){
         super(tileEntityType);
     }
 
-    public DistilleryTileEntity(){
-        this(RegistryHandler.DISTILLERY_TILE_ENTITY.get());
+    public TahonaTileEntity(){
+        this(RegistryHandler.TAHONA_TILE_ENTITY.get());
     }
 
     @Override
@@ -139,17 +138,17 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     @Override
     public void setInventorySlotContents(int index, ItemStack stack) {
         ItemStack itemStack = this.contents.get(index);
-        boolean cookTimeShouldReset = stack.isEmpty() || !stack.isItemEqual(itemStack) || !ItemStack.areItemStackTagsEqual(stack, itemStack);
+        boolean cyclesShouldReset = stack.isEmpty() || !stack.isItemEqual(itemStack) || !ItemStack.areItemStackTagsEqual(stack, itemStack);
         this.contents.set(index, stack);
         if(stack.getCount() > this.getInventoryStackLimit())
         {
             stack.setCount(this.getInventoryStackLimit());
         }
 
-        if(index == SLOT.INGREDIENT.getIndex() && cookTimeShouldReset)
+        if(index == SLOT.INGREDIENT.getIndex() && cyclesShouldReset)
         {
-            this.totalCookTime = this.getCookTime(stack);
-            this.cookTime = 0;
+            this.cyclesRequired = getCyclesRequired(stack);
+            this.cyclesMade = 0;
             this.markDirty();
         }
     }
@@ -174,12 +173,12 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
 
     @Override
     protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent("container.alcoholism.distillery_container");
+        return new TranslationTextComponent("container.alcoholism.tahona_container");
     }
 
     @Override
     protected Container createMenu(int id, PlayerInventory player) {
-        return new DistilleryContainer(id, player, this);
+        return new TahonaContainer(id, player, this);
     }
 
     @Override
@@ -192,9 +191,8 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         super.write(compound);
-        compound.putInt("FuelBurnTime", (short)this.fuelBurnTimeRemaining);
-        compound.putInt("CookTime", (short)this.cookTime);
-        compound.putInt("CookTimeTotal", (short)this.totalCookTime);
+        compound.putInt("CyclesMade", (short)this.cyclesMade);
+        compound.putInt("CyclesRequired", (short)this.cyclesRequired);
         ItemStackHelper.saveAllItems(compound, this.contents);
 
         if(this.hasCustomName()){
@@ -210,10 +208,10 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         super.read(compound);
         this.contents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
         ItemStackHelper.loadAllItems(compound, this.contents);
-        this.fuelBurnTimeRemaining = compound.getInt("FuelBurnTime");
-        this.cookTime = compound.getInt("CookTime");
-        this.totalCookTime = compound.getInt("CookTimeTotal");
-        this.currentItemBurnTime = getBurnTime(this.contents.get(SLOT.FUEL.getIndex()));
+        this.cyclesMade = compound.getInt("CyclesMade");
+        this.cyclesRequired = compound.getInt("CyclesRequired");
+
+        Alcoholism.LOGGER.info("Reading from compoundNBT");
 
         // I think 8 is a magic number here that means "string"
         // as in; does this compound contain the key "CustomName" and its value is a string
@@ -261,122 +259,75 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         }
     }
 
-    @Override
-    public void updateContainingBlockInfo() {
-        super.updateContainingBlockInfo();
-        if(this.itemHandler != null){
-            this.itemHandler.invalidate();
-            this.itemHandler = null;
-        }
-    }
+    //@Override
+    //public void updateContainingBlockInfo() {
+    //    super.updateContainingBlockInfo();
+    //    if(this.itemHandler != null){
+    //        this.itemHandler.invalidate();
+    //        this.itemHandler = null;
+    //    }
+    //}
+//
+    //@Nullable
+    //@Override
+    //public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
+    //    if(cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+    //        return itemHandler.cast();
+    //    }
+    //    return super.getCapability(cap, side);
+    //}
+//
+    //@Override
+    //public void remove() {
+    //    super.remove();
+    //    if(itemHandler != null){
+    //        itemHandler.invalidate();
+    //    }
+    //}
 
-    @Nullable
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
-        if(cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        if(itemHandler != null){
-            itemHandler.invalidate();
-        }
-    }
-
-    @Override
-    public void tick() {
-        boolean wasBurning = this.isBurning();
-        boolean isDirty = false;
-        if (this.isBurning()){
-            this.fuelBurnTimeRemaining--;
-        }
-
-        if (!this.world.isRemote)
-        {
-            ItemStack ingredientStack = this.contents.get(SLOT.INGREDIENT.getIndex());
-            ItemStack fuelStack = this.contents.get(SLOT.FUEL.getIndex());
-            // If we're not burning anymore than a fuel has been consumed
-            // and we need to check if there is any left to keep going
-            if (!this.isBurning() && this.canSmelt()){
-
-                // Set the burn time remaining to the burn time of the fuel in the slot right now
-                this.fuelBurnTimeRemaining = getBurnTime(fuelStack);
-                this.currentItemBurnTime = this.fuelBurnTimeRemaining;
-
-                // If we are now burning again than we need to consume a fuel
-                if (this.isBurning()){
-
-                    isDirty = true;
-
-                    Item fuelItem = fuelStack.getItem();
-                    fuelStack.shrink(1);
-
-                }
-            }
-
-            if (this.isBurning() && this.canSmelt()) {
-                this.cookTime++;
-
-                if (this.cookTime == this.totalCookTime) {
-                    this.cookTime = 0;
-                    this.totalCookTime = this.getCookTime(this.contents.get(0));
-                    this.distillItem();
-                    isDirty = true;
-                }
-            }
-            else {
-                this.cookTime = 0;
-            }
-            if (wasBurning != this.isBurning()) {
-                isDirty = true;
-                //DistilleryBlock.setState(this.isBurning(), this.world, this.pos);
-            }
-        }
-
-        if (isDirty){
-            this.markDirty();
-        }
-    }
-
-    public static int getBurnTime(ItemStack itemStack){
+    public static int getCyclesRequired(ItemStack itemStack){
         if (itemStack.isEmpty()) {
             return 0;
         }
         else {
-            int burnTime = net.minecraftforge.common.ForgeHooks.getBurnTime(itemStack);
-            if(burnTime >= 0){
-                return burnTime;
-            }
-            else{
-                Alcoholism.LOGGER.error("Negative burn time found for fuel. Burn time: {}", burnTime);
-                return 0;
-            }
+            // Everything requires 10 cycles for now
+            return 5;
         }
     }
 
-    private boolean canSmelt(){
-        ItemStack resultItemStack = DistilleryRecipes.instance().getCookingResult(this.contents.get(SLOT.INGREDIENT.getIndex()));
+    public void doCycle(){
+        if(!this.world.isRemote){
+            Alcoholism.LOGGER.info("Doing cycle...");
+            cyclesMade++;
+            if(cyclesMade >= cyclesRequired){
+                cyclesMade = 0;
+                this.mashItem();
+                this.markDirty();
+            }
+
+            Alcoholism.LOGGER.info("Increase cycles. Current cycles: {}", this.cyclesMade);
+        }
+    }
+
+    private boolean canMash(){
+        ItemStack resultItemStack = TahonaRecipes.instance().getCookingResult(this.contents.get(SLOT.INGREDIENT.getIndex()));
         ItemStack outputItemStack = this.contents.get(SLOT.OUTPUT.getIndex());
         int outputStackLimit = outputItemStack.getMaxStackSize();
 
-        // If the result of the distillation is not empty (i.e. a real recipe)
+        // If the result of the mashing is not empty (i.e. a real recipe)
         if (resultItemStack != ItemStack.EMPTY){
             // If the output item stack is empty than we're good
             if (outputItemStack.isEmpty()){
                 return true;
             }
             // If the item in the output slot right now is different than the one that will be made
-            // once the distilling is done than we cannot distill
+            // once the mashing is done than we cannot mash
             else if (resultItemStack.getItem() != outputItemStack.getItem()){
                 Alcoholism.LOGGER.info("Different item in output from result.");
                 return false;
             }
             // If the combined stack size would be more less than or equal
-            // to the max stack size then we're good to distill
+            // to the max stack size then we're good to mash
             else if(resultItemStack.getCount() + outputItemStack.getCount() <= outputStackLimit){
                 return true;
             }
@@ -385,10 +336,10 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         return false;
     }
 
-    public void distillItem(){
-        if(this.canSmelt()){
+    public void mashItem(){
+        if(this.canMash()){
             ItemStack ingredientItemStack = this.contents.get(SLOT.INGREDIENT.getIndex());
-            ItemStack resultItemStack = DistilleryRecipes.instance().getCookingResult(ingredientItemStack);
+            ItemStack resultItemStack = TahonaRecipes.instance().getCookingResult(ingredientItemStack);
             ItemStack outputItemStack = this.contents.get(SLOT.OUTPUT.getIndex());
 
             if (outputItemStack.isEmpty()){
@@ -398,27 +349,19 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
                 outputItemStack.grow(resultItemStack.getCount());
             }
             else{
-                Alcoholism.LOGGER.error("Tried to distill item while result is not equal to the item currently in the output slot.");
+                Alcoholism.LOGGER.error("Tried to mash item while result is not equal to the item currently in the output slot.");
             }
 
             ingredientItemStack.shrink(1);
         }
     }
 
-    public boolean isBurning(){
-        return this.fuelBurnTimeRemaining > 0;
-    }
-
-    public int getCookTime(ItemStack itemStack){
-        return 100;
-    }
-
     public static int getPlayersUsing(IBlockReader reader, BlockPos pos) {
         BlockState blockState = reader.getBlockState(pos);
         if(blockState.hasTileEntity()){
             TileEntity tileEntity = reader.getTileEntity(pos);
-            if(tileEntity instanceof DistilleryTileEntity) {
-                return ((DistilleryTileEntity)tileEntity).numPlayerUsing;
+            if(tileEntity instanceof TahonaTileEntity) {
+                return ((TahonaTileEntity)tileEntity).numPlayerUsing;
             }
         }
         return 0;

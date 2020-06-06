@@ -1,21 +1,23 @@
 package com.toxicglados.alcoholism.util;
 
 import com.toxicglados.alcoholism.Alcoholism;
-import com.toxicglados.alcoholism.blocks.AgaveCrop;
-import com.toxicglados.alcoholism.blocks.BlockItemBase;
-import com.toxicglados.alcoholism.blocks.DistilleryBlock;
-import com.toxicglados.alcoholism.blocks.RiceCrop;
+import com.toxicglados.alcoholism.blocks.*;
 import com.toxicglados.alcoholism.container.DistilleryContainer;
+import com.toxicglados.alcoholism.container.TahonaContainer;
 import com.toxicglados.alcoholism.items.ItemBase;
 import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
+import com.toxicglados.alcoholism.tileentity.TahonaTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.extensions.IForgeContainerType;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -28,7 +30,14 @@ public class RegistryHandler {
     public static final DeferredRegister<ContainerType<?>> CONTAINERS = new DeferredRegister<>(ForgeRegistries.CONTAINERS, Alcoholism.MOD_ID);
 
 
-
+    //private static int message_id = 0;
+    //private static final String PROTOCOL_VERSION = "1";
+    //public static final SimpleChannel NETWORK_INSTANCE = NetworkRegistry.newSimpleChannel(
+    //        new ResourceLocation(Alcoholism.MOD_ID, "main"),
+    //        () -> PROTOCOL_VERSION,
+    //        PROTOCOL_VERSION::equals,
+    //        PROTOCOL_VERSION::equals
+    //);
 
     public static void init() {
         ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
@@ -47,18 +56,25 @@ public class RegistryHandler {
     public static final RegistryObject<Block> DISTILLERY_BLOCK = BLOCKS.register("distillery_block", DistilleryBlock::new);
     public static final RegistryObject<Block> RICE_CROP = BLOCKS.register("rice_crop", () -> new RiceCrop(Block.Properties.from(Blocks.WHEAT)));
     public static final RegistryObject<Block> AGAVE_CROP = BLOCKS.register("agave_crop", () -> new AgaveCrop(Block.Properties.from(Blocks.WHEAT)));
+    public static final RegistryObject<Block> TAHONA_BLOCK = BLOCKS.register("tahona_block", TahonaBlock::new);
 
     // Block Items
     public static final RegistryObject<Item> DISTILLERY_BLOCK_ITEM = ITEMS.register("distillery_block", () -> new BlockItemBase(DISTILLERY_BLOCK.get()));
     public static final RegistryObject<Item> RICE_CROP_SEED = ITEMS.register("rice_seed", () -> new BlockItemBase(RICE_CROP.get()));
     public static final RegistryObject<Item> AGAVE_CROP_SEED = ITEMS.register("agave_seed", () -> new BlockItemBase(AGAVE_CROP.get()));
+    public static final RegistryObject<Item> TAHONA_BLOCK_ITEM = ITEMS.register("tahona_block", () -> new BlockItemBase(TAHONA_BLOCK.get()));
 
 
     // Tile Entities
     public static final RegistryObject<TileEntityType<DistilleryTileEntity>> DISTILLERY_TILE_ENTITY =  TILE_ENTITIES.register("distillery_tile_entity", () ->
                                                                                                                         TileEntityType.Builder.create(DistilleryTileEntity::new, DISTILLERY_BLOCK.get())
-                                                                                                                        .build(null));
+                                                                                                                                .build(null));
+
+    public static final RegistryObject<TileEntityType<TahonaTileEntity>> TAHONA_TILE_ENTITY =  TILE_ENTITIES.register("tahona_tile_entity", () ->
+                                                                                                                        TileEntityType.Builder.create(TahonaTileEntity::new, TAHONA_BLOCK.get())
+                                                                                                                                .build(null));
 
     // Containers
     public static final RegistryObject<ContainerType<DistilleryContainer>> DISTILLERY_CONTAINER = CONTAINERS.register("distillery_container", () -> IForgeContainerType.create(DistilleryContainer::new));
+    public static final RegistryObject<ContainerType<TahonaContainer>> TAHONA_CONTAINER = CONTAINERS.register("tahona_container", () -> IForgeContainerType.create(TahonaContainer::new));
 }

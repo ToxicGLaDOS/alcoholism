@@ -1,36 +1,43 @@
 package com.toxicglados.alcoholism.container;
 
 import com.toxicglados.alcoholism.Alcoholism;
-import com.toxicglados.alcoholism.core.slots.DistilleryFuelSlot;
 import com.toxicglados.alcoholism.core.slots.OutputSlot;
-import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
+import com.toxicglados.alcoholism.core.slots.TahonaSlot;
+import com.toxicglados.alcoholism.tileentity.TahonaTileEntity;
 import com.toxicglados.alcoholism.util.RegistryHandler;
+import net.minecraft.block.FurnaceBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.*;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.FurnaceContainer;
+import net.minecraft.inventory.container.IContainerListener;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.tileentity.FurnaceTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.logging.log4j.core.jmx.Server;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 
-public class DistilleryContainer extends Container {
+public class TahonaContainer extends Container {
 
-    public final DistilleryTileEntity tileEntity;
+    public final TahonaTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
-    private final IIntArray distilleryData;
+    private final IIntArray tahonaData;
+    private PlayerEntity player;
 
-    public DistilleryContainer(final int windowId, final PlayerInventory playerInventory, final DistilleryTileEntity tileEntity) {
-        super(RegistryHandler.DISTILLERY_CONTAINER.get(), windowId);
+    public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final TahonaTileEntity tileEntity) {
+        super(RegistryHandler.TAHONA_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
-        this.distilleryData = tileEntity.distilleryData;
+        this.tahonaData = tileEntity.tahonaData;
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
-
+        this.player = playerInventory.player;
         int startX = 8;
         int slotSize = 14;
         int bufferSize = 4;
@@ -38,26 +45,16 @@ public class DistilleryContainer extends Container {
         int slotGapSize = slotSize + bufferSize;
 
         int ingredientInputX = 55;
-        int ingredientInputY = 17;
-
-        int fuelInputX = 55;
-        int fuelInputY = 52;
+        int ingredientInputY = 33;
 
         int outputX = 116;
         int outputY = 35;
 
-        // THIS IS SUPER IMPORTANT
-        // IT KEEPS THE distilleryData IN SYNC WITH CLIENT
-        this.trackIntArray(tileEntity.distilleryData);
-
         // Ingredient slot
-        this.addSlot(new Slot(tileEntity, 0, ingredientInputX, ingredientInputY));
-
-        // Fuel slot
-        this.addSlot(new DistilleryFuelSlot(tileEntity, 1, fuelInputX, fuelInputY));
+        this.addSlot(new TahonaSlot(tileEntity, 0, ingredientInputX, ingredientInputY));
 
         // Output slot
-        this.addSlot(new OutputSlot(tileEntity, 2, outputX, outputY));
+        this.addSlot(new OutputSlot(tileEntity, 1, outputX, outputY));
 
 
         // Main Player Inventory
@@ -76,26 +73,38 @@ public class DistilleryContainer extends Container {
             this.addSlot(new Slot(playerInventory, column, startX + column * slotGapSize, playerHotbarY));
         }
 
-
+        // THIS IS SUPER IMPORTANT
+        // IT KEEPS THE tahonaData IN SYNC WITH CLIENT
+        this.trackIntArray(this.tahonaData);
     }
 
-    public DistilleryContainer(final int windowId, final PlayerInventory playerInventory, final PacketBuffer data) {
+    public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final PacketBuffer data) {
         this(windowId, playerInventory, getTileEntity(playerInventory, data));
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity playerIn) {
-        return isWithinUsableDistance(canInteractWithCallable, playerIn, RegistryHandler.DISTILLERY_BLOCK.get());
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+        if(player instanceof ServerPlayerEntity){
+            Alcoholism.LOGGER.info("ServerPlayerEntity");
+            ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
+            serverPlayerEntity.sendWindowProperty(this, 0, this.tahonaData.get(0));
+        }
     }
 
-    private static DistilleryTileEntity getTileEntity(final PlayerInventory playerInventory, final PacketBuffer data) {
+    @Override
+    public boolean canInteractWith(PlayerEntity playerIn) {
+        return isWithinUsableDistance(canInteractWithCallable, playerIn, RegistryHandler.TAHONA_BLOCK.get());
+    }
+
+    private static TahonaTileEntity getTileEntity(final PlayerInventory playerInventory, final PacketBuffer data) {
         Objects.requireNonNull(playerInventory, "playerInventory cannot be null");
         Objects.requireNonNull(data, "data cannot be null");
 
         final TileEntity tileAtPos = playerInventory.player.world.getTileEntity(data.readBlockPos());
 
-        if(tileAtPos instanceof DistilleryTileEntity){
-            return (DistilleryTileEntity)tileAtPos;
+        if(tileAtPos instanceof TahonaTileEntity){
+            return (TahonaTileEntity) tileAtPos;
         }
         throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
     }
@@ -126,25 +135,17 @@ public class DistilleryContainer extends Container {
         return itemStack;
     }
 
+
     @OnlyIn(Dist.CLIENT)
     public int getCookProgressionScaled(int scale) {
-        int i = this.distilleryData.get(2);
-        int j = this.distilleryData.get(3);
-        return j != 0 && i != 0 ? i * scale / j : 0;
+        int i = this.tahonaData.get(0);
+        int j = this.tahonaData.get(1);
+        if (j == 0) return 0;
+        Alcoholism.LOGGER.info("data1: {}, data2: {}, returning: {}", this.tahonaData.get(0), this.tahonaData.get(1), i * scale /j);
+        return i * scale / j ;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public int getBurnLeftScaled(int scale) {
-        int i = this.distilleryData.get(1);
-        if (i == 0) {
-            i = 200;
-        }
-
-        return this.distilleryData.get(0) * scale / i;
-    }
-
-
-    public DistilleryTileEntity getTileEntity(){
+    public TahonaTileEntity getTileEntity(){
         return tileEntity;
     }
 }

@@ -3,8 +3,8 @@ package com.toxicglados.alcoholism.core.slots;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
-public class DistilleryOutputSlot extends AlcoholismSlot {
-    public DistilleryOutputSlot(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+public class OutputSlot extends AlcoholismSlot {
+    public OutputSlot(IInventory inventoryIn, int index, int xPosition, int yPosition) {
         super(inventoryIn, index, xPosition, yPosition);
     }
 
