@@ -4,6 +4,7 @@ import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.core.slots.OutputSlot;
 import com.toxicglados.alcoholism.core.slots.TahonaSlot;
 import com.toxicglados.alcoholism.tileentity.TahonaTileEntity;
+import com.toxicglados.alcoholism.util.AlcoholismIntReferenceHolder;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.block.FurnaceBlock;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,23 +20,30 @@ import net.minecraft.tileentity.FurnaceTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.IWorldPosCallable;
+import net.minecraft.util.IntReferenceHolder;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.logging.log4j.core.jmx.Server;
+import sun.net.www.content.text.plain;
 
 import java.util.Objects;
 
-public class TahonaContainer extends Container {
+public class TahonaContainer extends AlcoholismContainer {
 
     public final TahonaTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
     private final IIntArray tahonaData;
+    private int[] lastKnownValue;
     private PlayerEntity player;
 
     public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final TahonaTileEntity tileEntity) {
         super(RegistryHandler.TAHONA_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
         this.tahonaData = tileEntity.tahonaData;
+        lastKnownValue = new int[tahonaData.size()];
+        for(int i = 0; i < tahonaData.size(); i++){
+            lastKnownValue[i] = tahonaData.get(i);
+        }
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
         this.player = playerInventory.player;
         int startX = 8;
@@ -80,16 +88,6 @@ public class TahonaContainer extends Container {
 
     public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final PacketBuffer data) {
         this(windowId, playerInventory, getTileEntity(playerInventory, data));
-    }
-
-    @Override
-    public void detectAndSendChanges() {
-        super.detectAndSendChanges();
-        if(player instanceof ServerPlayerEntity){
-            Alcoholism.LOGGER.info("ServerPlayerEntity");
-            ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
-            serverPlayerEntity.sendWindowProperty(this, 0, this.tahonaData.get(0));
-        }
     }
 
     @Override
@@ -141,7 +139,6 @@ public class TahonaContainer extends Container {
         int i = this.tahonaData.get(0);
         int j = this.tahonaData.get(1);
         if (j == 0) return 0;
-        Alcoholism.LOGGER.info("data1: {}, data2: {}, returning: {}", this.tahonaData.get(0), this.tahonaData.get(1), i * scale /j);
         return i * scale / j ;
     }
 

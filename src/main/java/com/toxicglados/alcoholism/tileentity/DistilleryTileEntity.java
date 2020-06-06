@@ -1,32 +1,25 @@
 package com.toxicglados.alcoholism.tileentity;
 
 import com.toxicglados.alcoholism.Alcoholism;
-import com.toxicglados.alcoholism.blocks.DistilleryBlock;
 import com.toxicglados.alcoholism.container.DistilleryContainer;
 import com.toxicglados.alcoholism.core.recipes.DistilleryRecipes;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.*;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -301,7 +294,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
             ItemStack fuelStack = this.contents.get(SLOT.FUEL.getIndex());
             // If we're not burning anymore than a fuel has been consumed
             // and we need to check if there is any left to keep going
-            if (!this.isBurning() && this.canSmelt()){
+            if (!this.isBurning() && this.canDistill()){
 
                 // Set the burn time remaining to the burn time of the fuel in the slot right now
                 this.fuelBurnTimeRemaining = getBurnTime(fuelStack);
@@ -318,7 +311,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
                 }
             }
 
-            if (this.isBurning() && this.canSmelt()) {
+            if (this.isBurning() && this.canDistill()) {
                 this.cookTime++;
 
                 if (this.cookTime == this.totalCookTime) {
@@ -358,7 +351,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         }
     }
 
-    private boolean canSmelt(){
+    private boolean canDistill(){
         ItemStack resultItemStack = DistilleryRecipes.instance().getCookingResult(this.contents.get(SLOT.INGREDIENT.getIndex()));
         ItemStack outputItemStack = this.contents.get(SLOT.OUTPUT.getIndex());
         int outputStackLimit = outputItemStack.getMaxStackSize();
@@ -386,7 +379,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     }
 
     public void distillItem(){
-        if(this.canSmelt()){
+        if(this.canDistill()){
             ItemStack ingredientItemStack = this.contents.get(SLOT.INGREDIENT.getIndex());
             ItemStack resultItemStack = DistilleryRecipes.instance().getCookingResult(ingredientItemStack);
             ItemStack outputItemStack = this.contents.get(SLOT.OUTPUT.getIndex());

@@ -34,7 +34,7 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class TahonaTileEntity extends LockableTileEntity implements ITickableTileEntity {
+public class TahonaTileEntity extends LockableTileEntity {
 
     // The number of cycles the tahona has made on this ingredient
     private int cyclesMade;
@@ -43,18 +43,6 @@ public class TahonaTileEntity extends LockableTileEntity implements ITickableTil
     private String customName;
 
     private int tickCount = 0;
-
-    @Override
-    public void tick() {
-        if (!this.world.isRemote){
-            //Alcoholism.LOGGER.info("cyclesMade: {}, cyclesRequired: {}", cyclesMade, cyclesRequired);
-            //tickCount++;
-//
-            //if (tickCount % 40 == 0){
-            //    doCycle();
-            //}
-        }
-    }
 
     private enum SLOT {
         INGREDIENT(0), OUTPUT(1);
@@ -211,8 +199,6 @@ public class TahonaTileEntity extends LockableTileEntity implements ITickableTil
         this.cyclesMade = compound.getInt("CyclesMade");
         this.cyclesRequired = compound.getInt("CyclesRequired");
 
-        Alcoholism.LOGGER.info("Reading from compoundNBT");
-
         // I think 8 is a magic number here that means "string"
         // as in; does this compound contain the key "CustomName" and its value is a string
         if (compound.contains("CustomName", 8))
@@ -259,32 +245,6 @@ public class TahonaTileEntity extends LockableTileEntity implements ITickableTil
         }
     }
 
-    //@Override
-    //public void updateContainingBlockInfo() {
-    //    super.updateContainingBlockInfo();
-    //    if(this.itemHandler != null){
-    //        this.itemHandler.invalidate();
-    //        this.itemHandler = null;
-    //    }
-    //}
-//
-    //@Nullable
-    //@Override
-    //public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
-    //    if(cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-    //        return itemHandler.cast();
-    //    }
-    //    return super.getCapability(cap, side);
-    //}
-//
-    //@Override
-    //public void remove() {
-    //    super.remove();
-    //    if(itemHandler != null){
-    //        itemHandler.invalidate();
-    //    }
-    //}
-
     public static int getCyclesRequired(ItemStack itemStack){
         if (itemStack.isEmpty()) {
             return 0;
@@ -297,15 +257,12 @@ public class TahonaTileEntity extends LockableTileEntity implements ITickableTil
 
     public void doCycle(){
         if(!this.world.isRemote){
-            Alcoholism.LOGGER.info("Doing cycle...");
             cyclesMade++;
             if(cyclesMade >= cyclesRequired){
                 cyclesMade = 0;
                 this.mashItem();
                 this.markDirty();
             }
-
-            Alcoholism.LOGGER.info("Increase cycles. Current cycles: {}", this.cyclesMade);
         }
     }
 

@@ -19,7 +19,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public class DistilleryContainer extends Container {
+public class DistilleryContainer extends AlcoholismContainer {
 
     public final DistilleryTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
