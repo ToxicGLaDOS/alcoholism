@@ -18,7 +18,7 @@ public class TahonaRecipes {
     private final Map<ItemStack, Float> experienceList = Maps.<ItemStack, Float>newHashMap();
 
     private TahonaRecipes() {
-        this.addCooking(RegistryHandler.AGAVE.get(), new ItemStack(RegistryHandler.BAKED_AGAVE.get()), 0.2f);
+        this.addCooking(RegistryHandler.BAKED_AGAVE.get(), new ItemStack(RegistryHandler.MASHED_AGAVE.get()), 0.2f);
     }
 
     public static TahonaRecipes instance()

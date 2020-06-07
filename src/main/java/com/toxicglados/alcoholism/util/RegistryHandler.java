@@ -29,16 +29,6 @@ public class RegistryHandler {
     public static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = new DeferredRegister<>(ForgeRegistries.TILE_ENTITIES, Alcoholism.MOD_ID);
     public static final DeferredRegister<ContainerType<?>> CONTAINERS = new DeferredRegister<>(ForgeRegistries.CONTAINERS, Alcoholism.MOD_ID);
 
-
-    //private static int message_id = 0;
-    //private static final String PROTOCOL_VERSION = "1";
-    //public static final SimpleChannel NETWORK_INSTANCE = NetworkRegistry.newSimpleChannel(
-    //        new ResourceLocation(Alcoholism.MOD_ID, "main"),
-    //        () -> PROTOCOL_VERSION,
-    //        PROTOCOL_VERSION::equals,
-    //        PROTOCOL_VERSION::equals
-    //);
-
     public static void init() {
         ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
         BLOCKS.register(FMLJavaModLoadingContext.get().getModEventBus());
@@ -51,6 +41,7 @@ public class RegistryHandler {
     public static final RegistryObject<Item> RICE = ITEMS.register("rice", ItemBase::new);
     public static final RegistryObject<Item> AGAVE = ITEMS.register("agave", ItemBase::new);
     public static final RegistryObject<Item> BAKED_AGAVE = ITEMS.register("baked_agave", ItemBase::new);
+    public static final RegistryObject<Item> MASHED_AGAVE = ITEMS.register("mashed_agave", ItemBase::new);
 
     // Blocks
     public static final RegistryObject<Block> DISTILLERY_BLOCK = BLOCKS.register("distillery_block", DistilleryBlock::new);
