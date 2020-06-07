@@ -19,16 +19,14 @@ public class DistilleryRecipes {
 
     private DistilleryRecipes() {
         this.addCooking(Items.POTATO, new ItemStack(RegistryHandler.VODKA.get()), 0.2f);
-        this.addCooking(RegistryHandler.MASHED_AGAVE.get(), new ItemStack(RegistryHandler.TEQUILA.get()), 0.2f);
+        this.addCooking(RegistryHandler.MOSTO.get(), new ItemStack(RegistryHandler.ORDINARIO.get()), 0.2f);
+        this.addCooking(RegistryHandler.ORDINARIO.get(), new ItemStack(RegistryHandler.SILVER_TEQUILA.get()), 0.2f);
+
     }
 
     public static DistilleryRecipes instance()
     {
         return COOKING_BASE;
-    }
-
-    public void addCookingRecipeForBlock(Block input, ItemStack stack, float experience) {
-        this.addCooking(Item.getItemFromBlock(input), stack, experience);
     }
 
     public void addCooking(Item input, ItemStack stack, float experience) {
