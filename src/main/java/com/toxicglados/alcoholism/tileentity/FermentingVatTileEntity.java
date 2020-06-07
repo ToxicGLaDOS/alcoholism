@@ -115,6 +115,16 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
     }
 
     @Override
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        if(index == SLOT.INGREDIENT.getIndex()){
+            return FermentingVatRecipes.instance().hasRecipeFor(stack);
+        }
+        else {
+            return false;
+        }
+    }
+
+    @Override
     public ItemStack removeStackFromSlot(int index) {
         return ItemStackHelper.getAndRemove(this.contents, index);
     }

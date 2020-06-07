@@ -15,7 +15,7 @@ public class DistilleryFuelSlot extends AlcoholismSlot {
         return isFuel(stack);
     }
 
-    protected boolean isFuel(ItemStack stack) {
+    public static boolean isFuel(ItemStack stack) {
         // TODO: Determine if this is the right way to do this.
         return AbstractFurnaceTileEntity.isFuel(stack);
     }

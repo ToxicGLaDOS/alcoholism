@@ -3,6 +3,7 @@ package com.toxicglados.alcoholism.tileentity;
 import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.container.DistilleryContainer;
 import com.toxicglados.alcoholism.core.recipes.DistilleryRecipes;
+import com.toxicglados.alcoholism.core.slots.DistilleryFuelSlot;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -122,6 +123,19 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     @Override
     public ItemStack decrStackSize(int index, int count) {
         return ItemStackHelper.getAndSplit(this.contents, index, count);
+    }
+
+    @Override
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        if (index == SLOT.INGREDIENT.getIndex()){
+            return DistilleryRecipes.instance().hasRecipeFor(stack);
+        }
+        else if(index == SLOT.FUEL.getIndex()){
+            return DistilleryFuelSlot.isFuel(stack);
+        }
+        else{
+            return false;
+        }
     }
 
     @Override

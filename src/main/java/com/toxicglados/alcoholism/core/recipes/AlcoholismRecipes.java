@@ -39,4 +39,8 @@ public abstract class AlcoholismRecipes {
 
         return ItemStack.EMPTY;
     }
+
+    public boolean hasRecipeFor(ItemStack itemStack){
+        return getCookingResult(itemStack) != ItemStack.EMPTY;
+    }
 }

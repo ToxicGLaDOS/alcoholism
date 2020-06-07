@@ -124,6 +124,16 @@ public class TahonaTileEntity extends LockableTileEntity {
     }
 
     @Override
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        if(index == SLOT.INGREDIENT.getIndex()){
+            return TahonaRecipes.instance().hasRecipeFor(stack);
+        }
+        else {
+            return false;
+        }
+    }
+
+    @Override
     public void setInventorySlotContents(int index, ItemStack stack) {
         ItemStack itemStack = this.contents.get(index);
         boolean cyclesShouldReset = stack.isEmpty() || !stack.isItemEqual(itemStack) || !ItemStack.areItemStackTagsEqual(stack, itemStack);
