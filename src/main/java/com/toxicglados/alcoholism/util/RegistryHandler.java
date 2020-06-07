@@ -42,6 +42,7 @@ public class RegistryHandler {
     public static final RegistryObject<Item> AGAVE = ITEMS.register("agave", ItemBase::new);
     public static final RegistryObject<Item> BAKED_AGAVE = ITEMS.register("baked_agave", ItemBase::new);
     public static final RegistryObject<Item> MASHED_AGAVE = ITEMS.register("mashed_agave", ItemBase::new);
+    public static final RegistryObject<Item> TEQUILA = ITEMS.register("tequila", ItemBase::new);
 
     // Blocks
     public static final RegistryObject<Block> DISTILLERY_BLOCK = BLOCKS.register("distillery_block", DistilleryBlock::new);

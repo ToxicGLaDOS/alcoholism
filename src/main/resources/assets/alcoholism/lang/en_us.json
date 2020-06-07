@@ -4,6 +4,7 @@
   "item.alcoholism.agave" : "Agave",
   "item.alcoholism.baked_agave" : "Baked Agave",
   "item.alcoholism.mashed_agave" : "Mashed Agave",
+  "item.alcoholism.tequila" : "Tequila",
   "block.alcoholism.distillery_block" : "Distillery",
   "block.alcoholism.tahona_block" : "Tahona",
   "itemGroup.alcoholismTab" : "Alcoholism",

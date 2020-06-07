@@ -19,6 +19,7 @@ public class DistilleryRecipes {
 
     private DistilleryRecipes() {
         this.addCooking(Items.POTATO, new ItemStack(RegistryHandler.VODKA.get()), 0.2f);
+        this.addCooking(RegistryHandler.MASHED_AGAVE.get(), new ItemStack(RegistryHandler.TEQUILA.get()), 0.2f);
     }
 
     public static DistilleryRecipes instance()
