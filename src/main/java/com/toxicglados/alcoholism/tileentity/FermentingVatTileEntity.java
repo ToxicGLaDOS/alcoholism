@@ -279,7 +279,7 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
 
     @Override
     public void tick() {
-        if (!this.world.isRemote)
+        if (!this.world.isRemote && this.canFerment())
         {
             this.fermentTime++;
 
