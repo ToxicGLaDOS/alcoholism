@@ -12,6 +12,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.FurnaceContainer;
 import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.tileentity.AbstractFurnaceTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
@@ -40,6 +41,19 @@ public class DistilleryBlock extends Block {
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world){
         return RegistryHandler.DISTILLERY_TILE_ENTITY.get().create();
+    }
+
+    @Override
+    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        if (state.getBlock() != newState.getBlock()) {
+            TileEntity tileentity = worldIn.getTileEntity(pos);
+            if (tileentity instanceof DistilleryTileEntity) {
+                InventoryHelper.dropInventoryItems(worldIn, pos, (DistilleryTileEntity)tileentity);
+                worldIn.updateComparatorOutputLevel(pos, this);
+            }
+
+            super.onReplaced(state, worldIn, pos, newState, isMoving);
+        }
     }
 
     @Override
