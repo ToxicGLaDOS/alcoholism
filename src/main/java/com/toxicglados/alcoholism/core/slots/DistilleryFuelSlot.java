@@ -15,14 +15,6 @@ public class DistilleryFuelSlot extends AlcoholismSlot {
         return isFuel(stack);
     }
 
-    // This is the maximum items in a stack for this slot
-    @Override
-    public int getItemStackLimit(ItemStack stack) {
-        // This ends up being whatever the stack size for the item is
-        // So 1 for buckets of lava and 64 for most blocks
-        return super.getItemStackLimit(stack);
-    }
-
     protected boolean isFuel(ItemStack stack) {
         // TODO: Determine if this is the right way to do this.
         return AbstractFurnaceTileEntity.isFuel(stack);

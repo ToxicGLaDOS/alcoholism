@@ -2,6 +2,7 @@ package com.toxicglados.alcoholism.util;
 
 import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.client.gui.DistilleryScreen;
+import com.toxicglados.alcoholism.client.gui.FermentingVatScreen;
 import com.toxicglados.alcoholism.client.gui.TahonaScreen;
 import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderType;
@@ -20,6 +21,7 @@ public class ClientEventBusSubscriber {
     public static void clientSetup(final FMLClientSetupEvent event){
         ScreenManager.registerFactory(RegistryHandler.DISTILLERY_CONTAINER.get(), DistilleryScreen::new);
         ScreenManager.registerFactory(RegistryHandler.TAHONA_CONTAINER.get(), TahonaScreen::new);
+        ScreenManager.registerFactory(RegistryHandler.FERMENTING_VAT_CONTAINER.get(), FermentingVatScreen::new);
 
         // Setting the render layer on these blocks to getCutout means that it won't
         // render alpha only pixels in the texture

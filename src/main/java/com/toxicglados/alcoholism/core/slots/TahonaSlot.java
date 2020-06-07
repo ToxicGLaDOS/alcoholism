@@ -15,12 +15,4 @@ public class TahonaSlot extends AlcoholismSlot {
         // Basically, is there a valid recipe that uses this item
         return TahonaRecipes.instance().getCookingResult(stack) != ItemStack.EMPTY;
     }
-
-    // This is the maximum items in a stack for this slot
-    @Override
-    public int getItemStackLimit(ItemStack stack) {
-        // This ends up being whatever the stack size for the item is
-        // So 1 for buckets of lava and 64 for most blocks
-        return super.getItemStackLimit(stack);
-    }
 }

@@ -1,43 +1,32 @@
 package com.toxicglados.alcoholism.container;
 
-import com.toxicglados.alcoholism.Alcoholism;
+import com.toxicglados.alcoholism.core.slots.FermentingVatSlot;
 import com.toxicglados.alcoholism.core.slots.OutputSlot;
-import com.toxicglados.alcoholism.core.slots.TahonaSlot;
-import com.toxicglados.alcoholism.tileentity.TahonaTileEntity;
-import com.toxicglados.alcoholism.util.AlcoholismIntReferenceHolder;
+import com.toxicglados.alcoholism.tileentity.FermentingVatTileEntity;
 import com.toxicglados.alcoholism.util.RegistryHandler;
-import net.minecraft.block.FurnaceBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.FurnaceContainer;
-import net.minecraft.inventory.container.IContainerListener;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.FurnaceTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.IWorldPosCallable;
-import net.minecraft.util.IntReferenceHolder;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.apache.logging.log4j.core.jmx.Server;
-import sun.net.www.content.text.plain;
 
 import java.util.Objects;
 
-public class TahonaContainer extends AlcoholismContainer {
+public class FermentingVatContainer extends AlcoholismContainer {
 
-    public final TahonaTileEntity tileEntity;
+    public final FermentingVatTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
-    private final IIntArray tahonaData;
+    private final IIntArray fermentingVatData;
 
-    public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final TahonaTileEntity tileEntity) {
-        super(RegistryHandler.TAHONA_CONTAINER.get(), windowId);
+    public FermentingVatContainer(final int windowId, final PlayerInventory playerInventory, final FermentingVatTileEntity tileEntity) {
+        super(RegistryHandler.FERMENTING_VAT_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
-        this.tahonaData = tileEntity.tahonaData;
+        this.fermentingVatData = tileEntity.fermentingVatData;
 
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
         int startX = 8;
@@ -53,7 +42,7 @@ public class TahonaContainer extends AlcoholismContainer {
         int outputY = 35;
 
         // Ingredient slot
-        this.addSlot(new TahonaSlot(tileEntity, 0, ingredientInputX, ingredientInputY));
+        this.addSlot(new FermentingVatSlot(tileEntity, 0, ingredientInputX, ingredientInputY));
 
         // Output slot
         this.addSlot(new OutputSlot(tileEntity, 1, outputX, outputY));
@@ -76,27 +65,27 @@ public class TahonaContainer extends AlcoholismContainer {
         }
 
         // THIS IS SUPER IMPORTANT
-        // IT KEEPS THE tahonaData IN SYNC WITH CLIENT
-        this.trackIntArray(this.tahonaData);
+        // IT KEEPS THE fermentingVatData IN SYNC WITH CLIENT
+        this.trackIntArray(this.fermentingVatData);
     }
 
-    public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final PacketBuffer data) {
+    public FermentingVatContainer(final int windowId, final PlayerInventory playerInventory, final PacketBuffer data) {
         this(windowId, playerInventory, getTileEntity(playerInventory, data));
     }
 
     @Override
     public boolean canInteractWith(PlayerEntity playerIn) {
-        return isWithinUsableDistance(canInteractWithCallable, playerIn, RegistryHandler.TAHONA_BLOCK.get());
+        return isWithinUsableDistance(canInteractWithCallable, playerIn, RegistryHandler.FERMENTING_VAT_BLOCK.get());
     }
 
-    private static TahonaTileEntity getTileEntity(final PlayerInventory playerInventory, final PacketBuffer data) {
+    private static FermentingVatTileEntity getTileEntity(final PlayerInventory playerInventory, final PacketBuffer data) {
         Objects.requireNonNull(playerInventory, "playerInventory cannot be null");
         Objects.requireNonNull(data, "data cannot be null");
 
         final TileEntity tileAtPos = playerInventory.player.world.getTileEntity(data.readBlockPos());
 
-        if(tileAtPos instanceof TahonaTileEntity){
-            return (TahonaTileEntity) tileAtPos;
+        if(tileAtPos instanceof FermentingVatTileEntity){
+            return (FermentingVatTileEntity) tileAtPos;
         }
         throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
     }
@@ -130,13 +119,14 @@ public class TahonaContainer extends AlcoholismContainer {
 
     @OnlyIn(Dist.CLIENT)
     public int getCookProgressionScaled(int scale) {
-        int i = this.tahonaData.get(0);
-        int j = this.tahonaData.get(1);
+        int i = this.fermentingVatData.get(0);
+        int j = this.fermentingVatData.get(1);
         if (j == 0) return 0;
         return i * scale / j ;
     }
 
-    public TahonaTileEntity getTileEntity(){
+    public FermentingVatTileEntity getTileEntity(){
         return tileEntity;
     }
+
 }

@@ -2,19 +2,15 @@ package com.toxicglados.alcoholism.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.toxicglados.alcoholism.Alcoholism;
-import com.toxicglados.alcoholism.container.TahonaContainer;
+import com.toxicglados.alcoholism.container.FermentingVatContainer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
-public class TahonaScreen extends ContainerScreen<TahonaContainer> {
+public class FermentingVatScreen extends ContainerScreen<FermentingVatContainer> {
 
     private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(Alcoholism.MOD_ID, "textures/gui/tahona_gui.png");
-    //private TahonaTileEntity tileEntity;
 
     private final int PROGRESS_ARROW_X = 80;
     private final int PROGRESS_ARROW_Y = 35;
@@ -23,7 +19,7 @@ public class TahonaScreen extends ContainerScreen<TahonaContainer> {
     private final int PROGRESS_ARROW_WIDTH = 22;
     private final int PROGRESS_ARROW_HEIGHT = 15;
 
-    public TahonaScreen(TahonaContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
+    public FermentingVatScreen(FermentingVatContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
         super(screenContainer, inv, titleIn);
 
         // Just an FYI: These default to

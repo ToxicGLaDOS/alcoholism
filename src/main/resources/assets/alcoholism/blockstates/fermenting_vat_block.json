@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "alcoholism:block/fermenting_vat_block" }
+  }
+}

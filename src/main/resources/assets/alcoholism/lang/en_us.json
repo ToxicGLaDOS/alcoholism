@@ -11,9 +11,11 @@
   "item.alcoholism.tequila" : "Tequila",
   "block.alcoholism.distillery_block" : "Distillery",
   "block.alcoholism.tahona_block" : "Tahona",
+  "block.alcoholism.fermenting_vat_block" : "Fermenting Vat",
   "itemGroup.alcoholismTab" : "Alcoholism",
   "container.alcoholism.distillery_container" : "Distillery Container",
   "container.alcoholism.tahona_container" : "Tahona Container",
+  "container.alcoholism.fermenting_vat_container" : "Fermenting Vat Container",
   "block.alcoholism.rice_crop" : "Rice Seeds",
   "block.alcoholism.agave_crop" : "Agave Seeds"
 }

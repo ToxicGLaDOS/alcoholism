@@ -3,9 +3,11 @@ package com.toxicglados.alcoholism.util;
 import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.blocks.*;
 import com.toxicglados.alcoholism.container.DistilleryContainer;
+import com.toxicglados.alcoholism.container.FermentingVatContainer;
 import com.toxicglados.alcoholism.container.TahonaContainer;
 import com.toxicglados.alcoholism.items.ItemBase;
 import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
+import com.toxicglados.alcoholism.tileentity.FermentingVatTileEntity;
 import com.toxicglados.alcoholism.tileentity.TahonaTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -54,13 +56,14 @@ public class RegistryHandler {
     public static final RegistryObject<Block> RICE_CROP = BLOCKS.register("rice_crop", () -> new RiceCrop(Block.Properties.from(Blocks.WHEAT)));
     public static final RegistryObject<Block> AGAVE_CROP = BLOCKS.register("agave_crop", () -> new AgaveCrop(Block.Properties.from(Blocks.WHEAT)));
     public static final RegistryObject<Block> TAHONA_BLOCK = BLOCKS.register("tahona_block", TahonaBlock::new);
+    public static final RegistryObject<Block> FERMENTING_VAT_BLOCK = BLOCKS.register("fermenting_vat_block", FermentingVatBlock::new);
 
     // Block Items
     public static final RegistryObject<Item> DISTILLERY_BLOCK_ITEM = ITEMS.register("distillery_block", () -> new BlockItemBase(DISTILLERY_BLOCK.get()));
     public static final RegistryObject<Item> RICE_CROP_SEED = ITEMS.register("rice_seed", () -> new BlockItemBase(RICE_CROP.get()));
     public static final RegistryObject<Item> AGAVE_CROP_SEED = ITEMS.register("agave_seed", () -> new BlockItemBase(AGAVE_CROP.get()));
     public static final RegistryObject<Item> TAHONA_BLOCK_ITEM = ITEMS.register("tahona_block", () -> new BlockItemBase(TAHONA_BLOCK.get()));
-
+    public static final RegistryObject<Item> FERMENTING_VAT_BLOCK_ITEM = ITEMS.register("fermenting_vat_block", () -> new BlockItemBase(FERMENTING_VAT_BLOCK.get()));
 
     // Tile Entities
     public static final RegistryObject<TileEntityType<DistilleryTileEntity>> DISTILLERY_TILE_ENTITY =  TILE_ENTITIES.register("distillery_tile_entity", () ->
@@ -70,8 +73,12 @@ public class RegistryHandler {
     public static final RegistryObject<TileEntityType<TahonaTileEntity>> TAHONA_TILE_ENTITY =  TILE_ENTITIES.register("tahona_tile_entity", () ->
                                                                                                                         TileEntityType.Builder.create(TahonaTileEntity::new, TAHONA_BLOCK.get())
                                                                                                                                 .build(null));
+    public static final RegistryObject<TileEntityType<FermentingVatTileEntity>> FERMENTING_VAT_TILE_ENTITY =  TILE_ENTITIES.register("fermenting_vat_tile_entity", () ->
+            TileEntityType.Builder.create(FermentingVatTileEntity::new, FERMENTING_VAT_BLOCK.get())
+                    .build(null));
 
     // Containers
     public static final RegistryObject<ContainerType<DistilleryContainer>> DISTILLERY_CONTAINER = CONTAINERS.register("distillery_container", () -> IForgeContainerType.create(DistilleryContainer::new));
     public static final RegistryObject<ContainerType<TahonaContainer>> TAHONA_CONTAINER = CONTAINERS.register("tahona_container", () -> IForgeContainerType.create(TahonaContainer::new));
+    public static final RegistryObject<ContainerType<FermentingVatContainer>> FERMENTING_VAT_CONTAINER = CONTAINERS.register("fermenting_vat_container", () -> IForgeContainerType.create(FermentingVatContainer::new));
 }
