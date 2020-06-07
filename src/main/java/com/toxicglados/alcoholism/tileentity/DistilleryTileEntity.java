@@ -188,6 +188,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         compound.putInt("FuelBurnTime", (short)this.fuelBurnTimeRemaining);
         compound.putInt("CookTime", (short)this.cookTime);
         compound.putInt("CookTimeTotal", (short)this.totalCookTime);
+        compound.putInt("CurrentItemBurnTime", (short)this.currentItemBurnTime);
         ItemStackHelper.saveAllItems(compound, this.contents);
 
         if(this.hasCustomName()){
@@ -206,7 +207,7 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         this.fuelBurnTimeRemaining = compound.getInt("FuelBurnTime");
         this.cookTime = compound.getInt("CookTime");
         this.totalCookTime = compound.getInt("CookTimeTotal");
-        this.currentItemBurnTime = getBurnTime(this.contents.get(SLOT.FUEL.getIndex()));
+        this.currentItemBurnTime = compound.getInt("CurrentItemBurnTime");
 
         // I think 8 is a magic number here that means "string"
         // as in; does this compound contain the key "CustomName" and its value is a string
