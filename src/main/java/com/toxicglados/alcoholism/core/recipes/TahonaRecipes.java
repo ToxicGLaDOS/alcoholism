@@ -11,44 +11,17 @@ import net.minecraft.item.Items;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class TahonaRecipes {
+public class TahonaRecipes extends AlcoholismRecipes{
 
-    private static final TahonaRecipes COOKING_BASE = new TahonaRecipes();
-    private final Map<ItemStack, ItemStack> cookingList = Maps.<ItemStack, ItemStack>newHashMap();
-    private final Map<ItemStack, Float> experienceList = Maps.<ItemStack, Float>newHashMap();
+    private static final TahonaRecipes SINGLETON_INSTANCE = new TahonaRecipes();
 
     private TahonaRecipes() {
-        this.addCooking(RegistryHandler.BAKED_AGAVE.get(), new ItemStack(RegistryHandler.AGAVE_JUICE.get()), 0.2f);
+        this.addRecipeFromItem(RegistryHandler.BAKED_AGAVE.get(), new ItemStack(RegistryHandler.AGAVE_JUICE.get()), 0.2f);
     }
 
     public static TahonaRecipes instance()
     {
-        return COOKING_BASE;
+        return SINGLETON_INSTANCE;
     }
 
-    public void addCooking(Item input, ItemStack stack, float experience) {
-        this.addCookingRecipe(new ItemStack(input, 1), stack, experience);
-    }
-
-    public void addCookingRecipe(ItemStack input, ItemStack stack, float experience) {
-        if (getCookingResult(input) != ItemStack.EMPTY)
-        {
-            Alcoholism.LOGGER.warn("Ignored cooking recipe with conflicting input: {} = {}", input, stack);
-            return;
-        }
-        this.cookingList.put(input, stack);
-        this.experienceList.put(stack, Float.valueOf(experience));
-    }
-
-    public ItemStack getCookingResult(ItemStack stack) {
-        for (Entry<ItemStack, ItemStack> entry : this.cookingList.entrySet())
-        {
-            if (stack.getItem() == entry.getKey().getItem())
-            {
-                return entry.getValue();
-            }
-        }
-
-        return ItemStack.EMPTY;
-    }
 }
