@@ -2,12 +2,14 @@ package com.toxicglados.alcoholism.container;
 
 import com.toxicglados.alcoholism.Alcoholism;
 import com.toxicglados.alcoholism.core.slots.DistilleryFuelSlot;
+import com.toxicglados.alcoholism.core.slots.DistillerySlot;
 import com.toxicglados.alcoholism.core.slots.OutputSlot;
 import com.toxicglados.alcoholism.tileentity.DistilleryTileEntity;
 import com.toxicglados.alcoholism.util.RegistryHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.*;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -24,12 +26,17 @@ public class DistilleryContainer extends AlcoholismContainer {
     public final DistilleryTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
     private final IIntArray distilleryData;
+    private final int playerInvStartIndex;
 
     public DistilleryContainer(final int windowId, final PlayerInventory playerInventory, final DistilleryTileEntity tileEntity) {
         super(RegistryHandler.DISTILLERY_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
         this.distilleryData = tileEntity.distilleryData;
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
+
+        // This is where the player inventory starts
+        // the first 3 are the inventory of the container
+        this.playerInvStartIndex = 3;
 
         int startX = 8;
         int slotSize = 14;
@@ -51,7 +58,7 @@ public class DistilleryContainer extends AlcoholismContainer {
         this.trackIntArray(tileEntity.distilleryData);
 
         // Ingredient slot
-        this.addSlot(new Slot(tileEntity, 0, ingredientInputX, ingredientInputY));
+        this.addSlot(new DistillerySlot(tileEntity, 0, ingredientInputX, ingredientInputY));
 
         // Fuel slot
         this.addSlot(new DistilleryFuelSlot(tileEntity, 1, fuelInputX, fuelInputY));
@@ -102,25 +109,29 @@ public class DistilleryContainer extends AlcoholismContainer {
 
     @Override
     public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
+
         ItemStack itemStack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-        if(slot != null && slot.getHasStack()){
-            ItemStack itemStack1 = slot.getStack();
-            itemStack = itemStack1.copy();
-            if(index < 36){
-                if(!this.mergeItemStack(itemStack1, 36, this.inventorySlots.size(), true)){
+        Slot clickedSlot = this.inventorySlots.get(index);
+        if(clickedSlot != null && clickedSlot.getHasStack()){
+            ItemStack clickedItemStack = clickedSlot.getStack();
+            itemStack = clickedItemStack.copy();
+            // If we shift-click on one of the items in the container
+            if(index < this.playerInvStartIndex){
+                // If we can't merge the itemStack we clicked on with one in the player inventory
+                if(!this.mergeItemStack(clickedItemStack, this.playerInvStartIndex, this.inventorySlots.size(), false)){
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(itemStack1, 0, 36, false)){
+            // If we can't merge the itemStack with one in the container but not the output (hence the -1)
+            else if (!this.mergeItemStack(clickedItemStack, 0, this.playerInvStartIndex - 1, false)){
                 return ItemStack.EMPTY;
             }
 
-            if(itemStack1.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
+            if(clickedItemStack.isEmpty()) {
+                clickedSlot.putStack(ItemStack.EMPTY);
             }
             else{
-                slot.onSlotChanged();
+                clickedSlot.onSlotChanged();
             }
         }
         return itemStack;

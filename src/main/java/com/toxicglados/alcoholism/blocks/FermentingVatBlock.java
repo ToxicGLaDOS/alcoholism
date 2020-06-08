@@ -54,9 +54,7 @@ public class FermentingVatBlock extends Block {
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult result) {
         if(!worldIn.isRemote) {
             TileEntity tileEntity = worldIn.getTileEntity(pos);
-            Alcoholism.LOGGER.info("Instance?");
             if(tileEntity instanceof FermentingVatTileEntity) {
-                Alcoholism.LOGGER.info("Activate");
                 NetworkHooks.openGui((ServerPlayerEntity) player, (FermentingVatTileEntity) tileEntity, pos);
                 return ActionResultType.SUCCESS;
             }

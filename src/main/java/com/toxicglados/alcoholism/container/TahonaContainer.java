@@ -33,11 +33,16 @@ public class TahonaContainer extends AlcoholismContainer {
     public final TahonaTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
     private final IIntArray tahonaData;
+    private final int playerInvStartIndex;
 
     public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final TahonaTileEntity tileEntity) {
         super(RegistryHandler.TAHONA_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
         this.tahonaData = tileEntity.tahonaData;
+
+        // This is where the player inventory starts
+        // the first 2 are the inventory of the container
+        this.playerInvStartIndex = 2;
 
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
         int startX = 8;
@@ -108,12 +113,12 @@ public class TahonaContainer extends AlcoholismContainer {
         if(slot != null && slot.getHasStack()){
             ItemStack itemStack1 = slot.getStack();
             itemStack = itemStack1.copy();
-            if(index < 36){
-                if(!this.mergeItemStack(itemStack1, 36, this.inventorySlots.size(), true)){
+            if(index < this.playerInvStartIndex){
+                if(!this.mergeItemStack(itemStack1, this.playerInvStartIndex, this.inventorySlots.size(), false)){
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(itemStack1, 0, 36, false)){
+            else if (!this.mergeItemStack(itemStack1, 0, this.playerInvStartIndex - 1, false)){
                 return ItemStack.EMPTY;
             }
 

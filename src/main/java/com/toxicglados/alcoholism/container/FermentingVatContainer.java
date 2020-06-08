@@ -22,11 +22,14 @@ public class FermentingVatContainer extends AlcoholismContainer {
     public final FermentingVatTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
     private final IIntArray fermentingVatData;
+    private final int playerInvStartIndex;
 
     public FermentingVatContainer(final int windowId, final PlayerInventory playerInventory, final FermentingVatTileEntity tileEntity) {
         super(RegistryHandler.FERMENTING_VAT_CONTAINER.get(), windowId);
         this.tileEntity = tileEntity;
         this.fermentingVatData = tileEntity.fermentingVatData;
+
+        playerInvStartIndex = 2;
 
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
         int startX = 8;
@@ -97,12 +100,12 @@ public class FermentingVatContainer extends AlcoholismContainer {
         if(slot != null && slot.getHasStack()){
             ItemStack itemStack1 = slot.getStack();
             itemStack = itemStack1.copy();
-            if(index < 36){
-                if(!this.mergeItemStack(itemStack1, 36, this.inventorySlots.size(), true)){
+            if(index < this.playerInvStartIndex){
+                if(!this.mergeItemStack(itemStack1, this.playerInvStartIndex, this.inventorySlots.size(), false)){
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(itemStack1, 0, 36, false)){
+            else if (!this.mergeItemStack(itemStack1, 0, this.playerInvStartIndex - 1, false)){
                 return ItemStack.EMPTY;
             }
 
