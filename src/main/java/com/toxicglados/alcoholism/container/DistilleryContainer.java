@@ -21,22 +21,17 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public class DistilleryContainer extends AlcoholismContainer {
+public class DistilleryContainer extends SingleOutputContainer {
 
     public final DistilleryTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
     private final IIntArray distilleryData;
-    private final int playerInvStartIndex;
 
     public DistilleryContainer(final int windowId, final PlayerInventory playerInventory, final DistilleryTileEntity tileEntity) {
-        super(RegistryHandler.DISTILLERY_CONTAINER.get(), windowId);
+        super(RegistryHandler.DISTILLERY_CONTAINER.get(), windowId, 3);
         this.tileEntity = tileEntity;
         this.distilleryData = tileEntity.distilleryData;
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
-
-        // This is where the player inventory starts
-        // the first 3 are the inventory of the container
-        this.playerInvStartIndex = 3;
 
         int startX = 8;
         int slotSize = 14;
@@ -105,36 +100,6 @@ public class DistilleryContainer extends AlcoholismContainer {
             return (DistilleryTileEntity)tileAtPos;
         }
         throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
-    }
-
-    @Override
-    public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
-
-        ItemStack itemStack = ItemStack.EMPTY;
-        Slot clickedSlot = this.inventorySlots.get(index);
-        if(clickedSlot != null && clickedSlot.getHasStack()){
-            ItemStack clickedItemStack = clickedSlot.getStack();
-            itemStack = clickedItemStack.copy();
-            // If we shift-click on one of the items in the container
-            if(index < this.playerInvStartIndex){
-                // If we can't merge the itemStack we clicked on with one in the player inventory
-                if(!this.mergeItemStack(clickedItemStack, this.playerInvStartIndex, this.inventorySlots.size(), false)){
-                    return ItemStack.EMPTY;
-                }
-            }
-            // If we can't merge the itemStack with one in the container but not the output (hence the -1)
-            else if (!this.mergeItemStack(clickedItemStack, 0, this.playerInvStartIndex - 1, false)){
-                return ItemStack.EMPTY;
-            }
-
-            if(clickedItemStack.isEmpty()) {
-                clickedSlot.putStack(ItemStack.EMPTY);
-            }
-            else{
-                clickedSlot.onSlotChanged();
-            }
-        }
-        return itemStack;
     }
 
     @OnlyIn(Dist.CLIENT)

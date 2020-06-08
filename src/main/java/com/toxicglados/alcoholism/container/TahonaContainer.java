@@ -28,21 +28,16 @@ import sun.net.www.content.text.plain;
 
 import java.util.Objects;
 
-public class TahonaContainer extends AlcoholismContainer {
+public class TahonaContainer extends SingleOutputContainer {
 
     public final TahonaTileEntity tileEntity;
     private final IWorldPosCallable canInteractWithCallable;
     private final IIntArray tahonaData;
-    private final int playerInvStartIndex;
 
     public TahonaContainer(final int windowId, final PlayerInventory playerInventory, final TahonaTileEntity tileEntity) {
-        super(RegistryHandler.TAHONA_CONTAINER.get(), windowId);
+        super(RegistryHandler.TAHONA_CONTAINER.get(), windowId, 2);
         this.tileEntity = tileEntity;
         this.tahonaData = tileEntity.tahonaData;
-
-        // This is where the player inventory starts
-        // the first 2 are the inventory of the container
-        this.playerInvStartIndex = 2;
 
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
         int startX = 8;
@@ -105,33 +100,6 @@ public class TahonaContainer extends AlcoholismContainer {
         }
         throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
     }
-
-    @Override
-    public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
-        ItemStack itemStack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-        if(slot != null && slot.getHasStack()){
-            ItemStack itemStack1 = slot.getStack();
-            itemStack = itemStack1.copy();
-            if(index < this.playerInvStartIndex){
-                if(!this.mergeItemStack(itemStack1, this.playerInvStartIndex, this.inventorySlots.size(), false)){
-                    return ItemStack.EMPTY;
-                }
-            }
-            else if (!this.mergeItemStack(itemStack1, 0, this.playerInvStartIndex - 1, false)){
-                return ItemStack.EMPTY;
-            }
-
-            if(itemStack1.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            }
-            else{
-                slot.onSlotChanged();
-            }
-        }
-        return itemStack;
-    }
-
 
     @OnlyIn(Dist.CLIENT)
     public int getCookProgressionScaled(int scale) {
