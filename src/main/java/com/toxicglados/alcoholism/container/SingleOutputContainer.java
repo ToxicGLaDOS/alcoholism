@@ -7,6 +7,8 @@ import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nullable;
 
+// A class for containers with a single output slot
+// The output slot MUST be the last slot added to the container
 public abstract class SingleOutputContainer extends AlcoholismContainer {
     protected final int playerInvStartIndex;
 

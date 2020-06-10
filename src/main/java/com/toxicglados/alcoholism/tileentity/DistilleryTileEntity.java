@@ -30,7 +30,10 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class DistilleryTileEntity extends LockableTileEntity implements ITickableTileEntity {
+public class DistilleryTileEntity extends SidedTileEntity implements ITickableTileEntity {
+    private static final int[] SLOTS_UP = new int[]{0};
+    private static final int[] SLOTS_DOWN = new int[]{2};
+    private static final int[] SLOTS_HORIZONTAL = new int[]{1};
 
     // Amount of ticks left of fuel for this item
     private int fuelBurnTimeRemaining;
@@ -92,37 +95,24 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         }
     };
 
-    private NonNullList<ItemStack> contents = NonNullList.withSize(3, ItemStack.EMPTY);
     protected int numPlayerUsing;
-    private IItemHandlerModifiable items = createHandler();
-    private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
 
     public DistilleryTileEntity(final TileEntityType<?> tileEntityType){
-        super(tileEntityType);
+        super(tileEntityType, 3);
     }
 
     public DistilleryTileEntity(){
         this(RegistryHandler.DISTILLERY_TILE_ENTITY.get());
     }
 
+
     @Override
-    public boolean isEmpty() {
-        for(ItemStack itemStack : contents){
-            if(!itemStack.isEmpty()){
-                return false;
-            }
+    public int[] getSlotsForFace(Direction side) {
+        if (side == Direction.DOWN) {
+            return SLOTS_DOWN;
+        } else {
+            return side == Direction.UP ? SLOTS_UP : SLOTS_HORIZONTAL;
         }
-        return true;
-    }
-
-    @Override
-    public ItemStack getStackInSlot(int index) {
-        return this.contents.get(index);
-    }
-
-    @Override
-    public ItemStack decrStackSize(int index, int count) {
-        return ItemStackHelper.getAndSplit(this.contents, index, count);
     }
 
     @Override
@@ -136,11 +126,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
         else{
             return false;
         }
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot(int index) {
-        return ItemStackHelper.getAndRemove(this.contents, index);
     }
 
     @Override
@@ -175,11 +160,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     }
 
     @Override
-    public void clear() {
-        this.contents.clear();
-    }
-
-    @Override
     protected ITextComponent getDefaultName() {
         return new TranslationTextComponent("container.alcoholism.distillery_container");
     }
@@ -187,11 +167,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     @Override
     protected Container createMenu(int id, PlayerInventory player) {
         return new DistilleryContainer(id, player, this);
-    }
-
-    @Override
-    public int getSizeInventory() {
-        return this.contents.size();
     }
 
     // Called every time the chunk containing this tile entity is unloaded
@@ -270,29 +245,26 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
     }
 
     @Override
-    public void updateContainingBlockInfo() {
-        super.updateContainingBlockInfo();
-        if(this.itemHandler != null){
-            this.itemHandler.invalidate();
-            this.itemHandler = null;
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
+        if (!this.removed && facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            if (facing == Direction.UP)
+                return handlers[0].cast();
+            else if (facing == Direction.DOWN)
+                return handlers[1].cast();
+            else
+                return handlers[2].cast();
         }
+        return super.getCapability(capability, facing);
     }
 
-    @Nullable
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
-        if(cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
+    /**
+     * invalidates a tile entity
+     */
     @Override
     public void remove() {
         super.remove();
-        if(itemHandler != null){
-            itemHandler.invalidate();
-        }
+        for (int x = 0; x < handlers.length; x++)
+            handlers[x].invalidate();
     }
 
     @Override
@@ -430,10 +402,6 @@ public class DistilleryTileEntity extends LockableTileEntity implements ITickabl
             }
         }
         return 0;
-    }
-
-    private IItemHandlerModifiable createHandler() {
-        return new InvWrapper(this);
     }
 
     private void playSound(SoundEvent sound){

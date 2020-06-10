@@ -25,6 +25,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -34,8 +35,10 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class TahonaTileEntity extends LockableTileEntity {
-
+public class TahonaTileEntity extends SidedTileEntity {
+    private static final int[] SLOTS_UP = new int[]{0};
+    private static final int[] SLOTS_DOWN = new int[]{1};
+    private static final int[] SLOTS_HORIZONTAL = new int[]{0};
     // The number of cycles the tahona has made on this ingredient
     private int cyclesMade;
     // The number of cycles required for this item
@@ -85,42 +88,24 @@ public class TahonaTileEntity extends LockableTileEntity {
         }
     };
 
-    private NonNullList<ItemStack> contents = NonNullList.withSize(2, ItemStack.EMPTY);
     protected int numPlayerUsing;
-    //private IItemHandlerModifiable items = createHandler();
-    //private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
 
     public TahonaTileEntity(final TileEntityType<?> tileEntityType){
-        super(tileEntityType);
+        super(tileEntityType, 2);
     }
 
     public TahonaTileEntity(){
         this(RegistryHandler.TAHONA_TILE_ENTITY.get());
     }
 
+
     @Override
-    public boolean isEmpty() {
-        for(ItemStack itemStack : contents){
-            if(!itemStack.isEmpty()){
-                return false;
-            }
+    public int[] getSlotsForFace(Direction side) {
+        if (side == Direction.DOWN) {
+            return SLOTS_DOWN;
+        } else {
+            return side == Direction.UP ? SLOTS_UP : SLOTS_HORIZONTAL;
         }
-        return true;
-    }
-
-    @Override
-    public ItemStack getStackInSlot(int index) {
-        return this.contents.get(index);
-    }
-
-    @Override
-    public ItemStack decrStackSize(int index, int count) {
-        return ItemStackHelper.getAndSplit(this.contents, index, count);
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot(int index) {
-        return ItemStackHelper.getAndRemove(this.contents, index);
     }
 
     @Override
@@ -162,11 +147,6 @@ public class TahonaTileEntity extends LockableTileEntity {
         {
             return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
         }
-    }
-
-    @Override
-    public void clear() {
-        this.contents.clear();
     }
 
     @Override
@@ -245,6 +225,29 @@ public class TahonaTileEntity extends LockableTileEntity {
             this.numPlayerUsing--;
             this.onOpenOrClose();
         }
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
+        if (!this.removed && facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            if (facing == Direction.UP)
+                return handlers[0].cast();
+            else if (facing == Direction.DOWN)
+                return handlers[1].cast();
+            else
+                return handlers[2].cast();
+        }
+        return super.getCapability(capability, facing);
+    }
+
+    /**
+     * invalidates a tile entity
+     */
+    @Override
+    public void remove() {
+        super.remove();
+        for (int x = 0; x < handlers.length; x++)
+            handlers[x].invalidate();
     }
 
     protected void onOpenOrClose() {
@@ -332,10 +335,6 @@ public class TahonaTileEntity extends LockableTileEntity {
             }
         }
         return 0;
-    }
-
-    private IItemHandlerModifiable createHandler() {
-        return new InvWrapper(this);
     }
 
     private void playSound(SoundEvent sound){

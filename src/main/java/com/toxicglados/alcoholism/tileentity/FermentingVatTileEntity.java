@@ -9,15 +9,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.LockableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.tileentity.*;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
@@ -26,14 +25,18 @@ import net.minecraft.world.IBlockReader;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class FermentingVatTileEntity extends LockableTileEntity implements ITickableTileEntity {
-
+public class FermentingVatTileEntity extends SidedTileEntity implements ITickableTileEntity {
+    private static final int[] SLOTS_UP = new int[]{0};
+    private static final int[] SLOTS_DOWN = new int[]{1};
+    private static final int[] SLOTS_HORIZONTAL = new int[]{0};
     // Amount of ticks the current item has been fermenting
     private int fermentTime;
     // The number of ticks required to ferment the current item
@@ -80,14 +83,10 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
             return 2;
         }
     };
-
-    private NonNullList<ItemStack> contents = NonNullList.withSize(2, ItemStack.EMPTY);
     protected int numPlayerUsing;
-    private IItemHandlerModifiable items = createHandler();
-    private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
 
     public FermentingVatTileEntity(final TileEntityType<?> tileEntityType){
-        super(tileEntityType);
+        super(tileEntityType, 2);
     }
 
     public FermentingVatTileEntity(){
@@ -95,23 +94,12 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
     }
 
     @Override
-    public boolean isEmpty() {
-        for(ItemStack itemStack : contents){
-            if(!itemStack.isEmpty()){
-                return false;
-            }
+    public int[] getSlotsForFace(Direction side) {
+        if (side == Direction.DOWN) {
+            return SLOTS_DOWN;
+        } else {
+            return side == Direction.UP ? SLOTS_UP : SLOTS_HORIZONTAL;
         }
-        return true;
-    }
-
-    @Override
-    public ItemStack getStackInSlot(int index) {
-        return this.contents.get(index);
-    }
-
-    @Override
-    public ItemStack decrStackSize(int index, int count) {
-        return ItemStackHelper.getAndSplit(this.contents, index, count);
     }
 
     @Override
@@ -122,11 +110,6 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
         else {
             return false;
         }
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot(int index) {
-        return ItemStackHelper.getAndRemove(this.contents, index);
     }
 
     @Override
@@ -161,11 +144,6 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
     }
 
     @Override
-    public void clear() {
-        this.contents.clear();
-    }
-
-    @Override
     protected ITextComponent getDefaultName() {
         return new TranslationTextComponent("container.alcoholism.fermenting_vat_container");
     }
@@ -173,11 +151,6 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
     @Override
     protected Container createMenu(int id, PlayerInventory player) {
         return new FermentingVatContainer(id, player, this);
-    }
-
-    @Override
-    public int getSizeInventory() {
-        return this.contents.size();
     }
 
     // Called every time the chunk containing this tile entity is unloaded
@@ -252,29 +225,26 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
     }
 
     @Override
-    public void updateContainingBlockInfo() {
-        super.updateContainingBlockInfo();
-        if(this.itemHandler != null){
-            this.itemHandler.invalidate();
-            this.itemHandler = null;
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
+        if (!this.removed && facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            if (facing == Direction.UP)
+                return handlers[0].cast();
+            else if (facing == Direction.DOWN)
+                return handlers[1].cast();
+            else
+                return handlers[2].cast();
         }
+        return super.getCapability(capability, facing);
     }
 
-    @Nullable
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
-        if(cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
+    /**
+     * invalidates a tile entity
+     */
     @Override
     public void remove() {
         super.remove();
-        if(itemHandler != null){
-            itemHandler.invalidate();
-        }
+        for (int x = 0; x < handlers.length; x++)
+            handlers[x].invalidate();
     }
 
     @Override
@@ -356,10 +326,6 @@ public class FermentingVatTileEntity extends LockableTileEntity implements ITick
             }
         }
         return 0;
-    }
-
-    private IItemHandlerModifiable createHandler() {
-        return new InvWrapper(this);
     }
 
     private void playSound(SoundEvent sound){
