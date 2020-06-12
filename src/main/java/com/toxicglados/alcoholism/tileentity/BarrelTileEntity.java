@@ -1,22 +1,19 @@
 package com.toxicglados.alcoholism.tileentity;
 
 import com.toxicglados.alcoholism.Alcoholism;
-import com.toxicglados.alcoholism.container.FermentingVatContainer;
-import com.toxicglados.alcoholism.core.recipes.FermentingVatRecipes;
+import com.toxicglados.alcoholism.container.BarrelContainer;
+import com.toxicglados.alcoholism.core.recipes.BarrelRecipes;
 import com.toxicglados.alcoholism.util.RegistryHandler;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.DispenserBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.*;
+import net.minecraft.tileentity.ITickableTileEntity;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
@@ -25,22 +22,17 @@ import net.minecraft.world.IBlockReader;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class FermentingVatTileEntity extends SidedTileEntity implements ITickableTileEntity {
+public class BarrelTileEntity extends SidedTileEntity implements ITickableTileEntity {
     private static final int[] SLOTS_UP = new int[]{0};
     private static final int[] SLOTS_DOWN = new int[]{1};
     private static final int[] SLOTS_HORIZONTAL = new int[]{0};
     // Amount of ticks the current item has been fermenting
-    private int fermentTime;
+    private int ageTime;
     // The number of ticks required to ferment the current item
-    private int fermentTimeRequired;
+    private int ageTimeRequired;
     private String customName;
 
     private enum SLOT {
@@ -56,13 +48,13 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
         }
     }
 
-    public final IIntArray fermentingVatData = new IIntArray() {
+    public final IIntArray barrelData = new IIntArray() {
         public int get(int index) {
             switch (index) {
                 case 0:
-                    return FermentingVatTileEntity.this.fermentTime;
+                    return BarrelTileEntity.this.ageTime;
                 case 1:
-                    return FermentingVatTileEntity.this.fermentTimeRequired;
+                    return BarrelTileEntity.this.ageTimeRequired;
                 default:
                     return 0;
             }
@@ -71,10 +63,10 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
         public void set(int index, int value) {
             switch (index) {
                 case 0:
-                    FermentingVatTileEntity.this.fermentTime = value;
+                    BarrelTileEntity.this.ageTime = value;
                     break;
                 case 1:
-                    FermentingVatTileEntity.this.fermentTimeRequired = value;
+                    BarrelTileEntity.this.ageTimeRequired = value;
                     break;
             }
         }
@@ -84,12 +76,12 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
         }
     };
 
-    public FermentingVatTileEntity(final TileEntityType<?> tileEntityType){
+    public BarrelTileEntity(final TileEntityType<?> tileEntityType){
         super(tileEntityType, 2);
     }
 
-    public FermentingVatTileEntity(){
-        this(RegistryHandler.FERMENTING_VAT_TILE_ENTITY.get());
+    public BarrelTileEntity(){
+        this(RegistryHandler.BARREL_TILE_ENTITY.get());
     }
 
     @Override
@@ -104,7 +96,7 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
         if(index == SLOT.INGREDIENT.getIndex()){
-            return FermentingVatRecipes.instance().hasRecipeFor(stack);
+            return BarrelRecipes.instance().hasRecipeFor(stack);
         }
         else {
             return false;
@@ -121,22 +113,22 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
             stack.setCount(this.getInventoryStackLimit());
         }
 
-        if(index == FermentingVatTileEntity.SLOT.INGREDIENT.getIndex() && cookTimeShouldReset)
+        if(index == SLOT.INGREDIENT.getIndex() && cookTimeShouldReset)
         {
-            this.fermentTimeRequired = this.getFermentTime(stack);
-            this.fermentTime = 0;
+            this.ageTimeRequired = this.getFermentTime(stack);
+            this.ageTime = 0;
             this.markDirty();
         }
     }
 
     @Override
     protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent("container.alcoholism.fermenting_vat_container");
+        return new TranslationTextComponent("container.alcoholism.barrel_container");
     }
 
     @Override
     protected Container createMenu(int id, PlayerInventory player) {
-        return new FermentingVatContainer(id, player, this);
+        return new BarrelContainer(id, player, this);
     }
 
     // Called every time the chunk containing this tile entity is unloaded
@@ -144,8 +136,8 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         super.write(compound);
-        compound.putInt("FermentTime", (short)this.fermentTime);
-        compound.putInt("FermentTimeRequired", (short)this.fermentTimeRequired);
+        compound.putInt("FermentTime", (short)this.ageTime);
+        compound.putInt("FermentTimeRequired", (short)this.ageTimeRequired);
         ItemStackHelper.saveAllItems(compound, this.contents);
 
         if(this.hasCustomName()){
@@ -161,8 +153,8 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
         super.read(compound);
         this.contents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
         ItemStackHelper.loadAllItems(compound, this.contents);
-        this.fermentTime = compound.getInt("FermentTime");
-        this.fermentTimeRequired = compound.getInt("FermentTimeRequired");
+        this.ageTime = compound.getInt("FermentTime");
+        this.ageTimeRequired = compound.getInt("FermentTimeRequired");
 
         // I think 8 is a magic number here that means "string"
         // as in; does this compound contain the key "CustomName" and its value is a string
@@ -210,19 +202,19 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
     public void tick() {
         if (!this.world.isRemote && this.canFerment())
         {
-            this.fermentTime++;
+            this.ageTime++;
 
-            if(this.fermentTime == this.fermentTimeRequired){
+            if(this.ageTime == this.ageTimeRequired){
                 this.fermentItem();
-                this.fermentTime = 0;
+                this.ageTime = 0;
                 this.markDirty();
             }
         }
     }
 
     private boolean canFerment(){
-        ItemStack resultItemStack = FermentingVatRecipes.instance().getCookingResult(this.contents.get(FermentingVatTileEntity.SLOT.INGREDIENT.getIndex()));
-        ItemStack outputItemStack = this.contents.get(FermentingVatTileEntity.SLOT.OUTPUT.getIndex());
+        ItemStack resultItemStack = BarrelRecipes.instance().getCookingResult(this.contents.get(SLOT.INGREDIENT.getIndex()));
+        ItemStack outputItemStack = this.contents.get(SLOT.OUTPUT.getIndex());
         int outputStackLimit = outputItemStack.getMaxStackSize();
 
         // If the result of the fermentation is not empty (i.e. a real recipe)
@@ -249,12 +241,12 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
 
     public void fermentItem(){
         if(this.canFerment()){
-            ItemStack ingredientItemStack = this.contents.get(FermentingVatTileEntity.SLOT.INGREDIENT.getIndex());
-            ItemStack resultItemStack = FermentingVatRecipes.instance().getCookingResult(ingredientItemStack);
-            ItemStack outputItemStack = this.contents.get(FermentingVatTileEntity.SLOT.OUTPUT.getIndex());
+            ItemStack ingredientItemStack = this.contents.get(SLOT.INGREDIENT.getIndex());
+            ItemStack resultItemStack = BarrelRecipes.instance().getCookingResult(ingredientItemStack);
+            ItemStack outputItemStack = this.contents.get(SLOT.OUTPUT.getIndex());
 
             if (outputItemStack.isEmpty()){
-                this.contents.set(FermentingVatTileEntity.SLOT.OUTPUT.getIndex(), resultItemStack.copy());
+                this.contents.set(SLOT.OUTPUT.getIndex(), resultItemStack.copy());
             }
             else if (resultItemStack.getItem() == outputItemStack.getItem()){
                 outputItemStack.grow(resultItemStack.getCount());
@@ -294,5 +286,4 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
 
         this.world.playSound((PlayerEntity)null, dx, dy, dz, sound, SoundCategory.BLOCKS, 0.5f, this.world.rand.nextFloat() * 0.1f + 0.9f);
     }
-
 }

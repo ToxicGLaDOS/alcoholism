@@ -1,6 +1,7 @@
 package com.toxicglados.alcoholism.util;
 
 import com.toxicglados.alcoholism.Alcoholism;
+import com.toxicglados.alcoholism.client.gui.BarrelScreen;
 import com.toxicglados.alcoholism.client.gui.DistilleryScreen;
 import com.toxicglados.alcoholism.client.gui.FermentingVatScreen;
 import com.toxicglados.alcoholism.client.gui.TahonaScreen;
@@ -22,6 +23,7 @@ public class ClientEventBusSubscriber {
         ScreenManager.registerFactory(RegistryHandler.DISTILLERY_CONTAINER.get(), DistilleryScreen::new);
         ScreenManager.registerFactory(RegistryHandler.TAHONA_CONTAINER.get(), TahonaScreen::new);
         ScreenManager.registerFactory(RegistryHandler.FERMENTING_VAT_CONTAINER.get(), FermentingVatScreen::new);
+        ScreenManager.registerFactory(RegistryHandler.BARREL_CONTAINER.get(), BarrelScreen::new);
 
         // Setting the render layer on these blocks to getCutout means that it won't
         // render alpha only pixels in the texture

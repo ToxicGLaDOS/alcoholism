@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "alcoholism:items/tequila"
+    "layer0": "alcoholism:items/gold_tequila"
   }
 }

@@ -8,14 +8,16 @@
   "item.alcoholism.mosto" : "Mosto",
   "item.alcoholism.ordinario" : "Ordinario",
   "item.alcoholism.silver_tequila" : "Silver Tequila",
-  "item.alcoholism.tequila" : "Tequila",
+  "item.alcoholism.gold_tequila" : "Gold Tequila",
   "block.alcoholism.distillery_block" : "Distillery",
+  "block.alcoholism.barrel_block" : "Barrel",
   "block.alcoholism.tahona_block" : "Tahona",
   "block.alcoholism.fermenting_vat_block" : "Fermenting Vat",
   "itemGroup.alcoholismTab" : "Alcoholism",
   "container.alcoholism.distillery_container" : "Distillery Container",
   "container.alcoholism.tahona_container" : "Tahona Container",
   "container.alcoholism.fermenting_vat_container" : "Fermenting Vat Container",
+  "container.alcoholism.barrel_container" : "Barrel Container",
   "block.alcoholism.rice_crop" : "Rice Seeds",
   "block.alcoholism.agave_crop" : "Agave Seeds"
 }
