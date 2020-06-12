@@ -83,7 +83,6 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
             return 2;
         }
     };
-    protected int numPlayerUsing;
 
     public FermentingVatTileEntity(final TileEntityType<?> tileEntityType){
         super(tileEntityType, 2);
@@ -130,18 +129,7 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
         }
     }
 
-    @Override
-    public boolean isUsableByPlayer(PlayerEntity player) {
-        // Not sure how this could happen?
-        if(this.world.getTileEntity(this.pos) != this)
-        {
-            return false;
-        }
-        else
-        {
-            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
-        }
-    }
+
 
     @Override
     protected ITextComponent getDefaultName() {
@@ -197,32 +185,7 @@ public class FermentingVatTileEntity extends SidedTileEntity implements ITickabl
         }
     }
 
-    @Override
-    public void openInventory(PlayerEntity player) {
-        if(!player.isSpectator()) {
-            if(this.numPlayerUsing < 0) {
-                this.numPlayerUsing = 0;
-            }
-            this.numPlayerUsing++;
-            this.onOpenOrClose();
-        }
-    }
 
-    @Override
-    public void closeInventory(PlayerEntity player) {
-        if(!player.isSpectator()) {
-            this.numPlayerUsing--;
-            this.onOpenOrClose();
-        }
-    }
-
-    protected void onOpenOrClose() {
-        Block block = this.getBlockState().getBlock();
-        if(block instanceof DispenserBlock){
-            this.world.addBlockEvent(this.pos, block, 1, this.numPlayerUsing);
-            this.world.notifyNeighborsOfStateChange(this.pos, block);
-        }
-    }
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {

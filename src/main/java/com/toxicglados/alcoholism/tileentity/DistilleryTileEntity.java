@@ -95,8 +95,6 @@ public class DistilleryTileEntity extends SidedTileEntity implements ITickableTi
         }
     };
 
-    protected int numPlayerUsing;
-
     public DistilleryTileEntity(final TileEntityType<?> tileEntityType){
         super(tileEntityType, 3);
     }
@@ -143,19 +141,6 @@ public class DistilleryTileEntity extends SidedTileEntity implements ITickableTi
             this.totalCookTime = this.getCookTime(stack);
             this.cookTime = 0;
             this.markDirty();
-        }
-    }
-
-    @Override
-    public boolean isUsableByPlayer(PlayerEntity player) {
-        // Not sure how this could happen?
-        if(this.world.getTileEntity(this.pos) != this)
-        {
-            return false;
-        }
-        else
-        {
-            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
         }
     }
 
@@ -214,33 +199,6 @@ public class DistilleryTileEntity extends SidedTileEntity implements ITickableTi
         }
         else{
             return super.receiveClientEvent(id, type);
-        }
-    }
-
-    @Override
-    public void openInventory(PlayerEntity player) {
-        if(!player.isSpectator()) {
-            if(this.numPlayerUsing < 0) {
-                this.numPlayerUsing = 0;
-            }
-            this.numPlayerUsing++;
-            this.onOpenOrClose();
-        }
-    }
-
-    @Override
-    public void closeInventory(PlayerEntity player) {
-        if(!player.isSpectator()) {
-            this.numPlayerUsing--;
-            this.onOpenOrClose();
-        }
-    }
-
-    protected void onOpenOrClose() {
-        Block block = this.getBlockState().getBlock();
-        if(block instanceof DispenserBlock){
-            this.world.addBlockEvent(this.pos, block, 1, this.numPlayerUsing);
-            this.world.notifyNeighborsOfStateChange(this.pos, block);
         }
     }
 

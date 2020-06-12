@@ -45,8 +45,6 @@ public class TahonaTileEntity extends SidedTileEntity {
     private int cyclesRequired;
     private String customName;
 
-    private int tickCount = 0;
-
     private enum SLOT {
         INGREDIENT(0), OUTPUT(1);
 
@@ -87,8 +85,6 @@ public class TahonaTileEntity extends SidedTileEntity {
             return 2;
         }
     };
-
-    protected int numPlayerUsing;
 
     public TahonaTileEntity(final TileEntityType<?> tileEntityType){
         super(tileEntityType, 2);
@@ -133,19 +129,6 @@ public class TahonaTileEntity extends SidedTileEntity {
             this.cyclesRequired = getCyclesRequired(stack);
             this.cyclesMade = 0;
             this.markDirty();
-        }
-    }
-
-    @Override
-    public boolean isUsableByPlayer(PlayerEntity player) {
-        // Not sure how this could happen?
-        if(this.world.getTileEntity(this.pos) != this)
-        {
-            return false;
-        }
-        else
-        {
-            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
         }
     }
 
@@ -209,25 +192,6 @@ public class TahonaTileEntity extends SidedTileEntity {
     }
 
     @Override
-    public void openInventory(PlayerEntity player) {
-        if(!player.isSpectator()) {
-            if(this.numPlayerUsing < 0) {
-                this.numPlayerUsing = 0;
-            }
-            this.numPlayerUsing++;
-            this.onOpenOrClose();
-        }
-    }
-
-    @Override
-    public void closeInventory(PlayerEntity player) {
-        if(!player.isSpectator()) {
-            this.numPlayerUsing--;
-            this.onOpenOrClose();
-        }
-    }
-
-    @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
         if (!this.removed && facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (facing == Direction.UP)
@@ -248,14 +212,6 @@ public class TahonaTileEntity extends SidedTileEntity {
         super.remove();
         for (int x = 0; x < handlers.length; x++)
             handlers[x].invalidate();
-    }
-
-    protected void onOpenOrClose() {
-        Block block = this.getBlockState().getBlock();
-        if(block instanceof DispenserBlock){
-            this.world.addBlockEvent(this.pos, block, 1, this.numPlayerUsing);
-            this.world.notifyNeighborsOfStateChange(this.pos, block);
-        }
     }
 
     public static int getCyclesRequired(ItemStack itemStack){

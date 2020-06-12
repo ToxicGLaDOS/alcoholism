@@ -1,5 +1,8 @@
 package com.toxicglados.alcoholism.tileentity;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.LockableTileEntity;
@@ -10,6 +13,7 @@ import net.minecraft.util.NonNullList;
 // LockableTileEntity with some reasonable default behaviours
 public abstract class AlcoholismLockableTileEntity extends LockableTileEntity {
     protected NonNullList<ItemStack> contents;
+    protected int numPlayerUsing;
 
     protected AlcoholismLockableTileEntity(TileEntityType<?> typeIn, final int containerSize) {
         super(typeIn);
@@ -49,5 +53,45 @@ public abstract class AlcoholismLockableTileEntity extends LockableTileEntity {
     @Override
     public int getSizeInventory() {
         return this.contents.size();
+    }
+
+    @Override
+    public boolean isUsableByPlayer(PlayerEntity player) {
+        // Not sure how this could happen?
+        if(this.world.getTileEntity(this.pos) != this)
+        {
+            return false;
+        }
+        else
+        {
+            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
+        }
+    }
+
+    @Override
+    public void openInventory(PlayerEntity player) {
+        if(!player.isSpectator()) {
+            if(this.numPlayerUsing < 0) {
+                this.numPlayerUsing = 0;
+            }
+            this.numPlayerUsing++;
+            this.onOpenOrClose();
+        }
+    }
+
+    @Override
+    public void closeInventory(PlayerEntity player) {
+        if(!player.isSpectator()) {
+            this.numPlayerUsing--;
+            this.onOpenOrClose();
+        }
+    }
+
+    protected void onOpenOrClose() {
+        Block block = this.getBlockState().getBlock();
+        if(block instanceof DispenserBlock){
+            this.world.addBlockEvent(this.pos, block, 1, this.numPlayerUsing);
+            this.world.notifyNeighborsOfStateChange(this.pos, block);
+        }
     }
 }
